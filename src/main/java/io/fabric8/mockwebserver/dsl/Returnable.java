@@ -18,6 +18,8 @@ package io.fabric8.mockwebserver.dsl;
 
 public interface Returnable<T> {
 
-  T andReturn(int statucCode, Object content);
+  T andReturn(int statusCode, Object content);
+
+  T andReturnChucked(int statusCode, Object... content);
 
 }

@@ -16,16 +16,18 @@
 
 package io.fabric8.mockwebserver.internal;
 
-public class ServerResponse {
+import com.squareup.okhttp.mockwebserver.MockResponse;
+import io.fabric8.mockwebserver.ServerResponse;
+
+public class SimpleResponse implements ServerResponse {
 
   private final int statusCode;
   private final String body;
 
-
   private final WebSocketSession webSocketSession;
   private final boolean repeatable;
 
-  public ServerResponse(int statusCode, String body, WebSocketSession webSocketSession, boolean repeatable) {
+  public SimpleResponse(boolean repeatable, int statusCode, String body, WebSocketSession webSocketSession) {
     this.statusCode = statusCode;
     this.body = body;
     this.webSocketSession = webSocketSession;
@@ -38,6 +40,17 @@ public class ServerResponse {
 
   public String getBody() {
     return body;
+  }
+
+  public MockResponse toMockResponse() {
+    MockResponse mockResponse = new MockResponse();
+    if (webSocketSession != null) {
+      mockResponse.withWebSocketUpgrade(webSocketSession);
+    } else {
+      mockResponse.setBody(body);
+      mockResponse.setResponseCode(statusCode);
+    }
+    return mockResponse;
   }
 
   public WebSocketSession getWebSocketSession() {
@@ -53,7 +66,7 @@ public class ServerResponse {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    ServerResponse that = (ServerResponse) o;
+    SimpleResponse that = (SimpleResponse) o;
 
     if (statusCode != that.statusCode) return false;
     if (repeatable != that.repeatable) return false;

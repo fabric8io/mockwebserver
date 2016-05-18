@@ -16,24 +16,25 @@
 
 package io.fabric8.mockwebserver.internal;
 
+import io.fabric8.mockwebserver.ServerRequest;
 import io.fabric8.mockwebserver.dsl.HttpMethod;
 
-public class ServerRequest {
+public class SimpleRequest implements ServerRequest {
 
   private static final String ROOT = "/";
 
   private final HttpMethod method;
   private final String path;
 
-  public ServerRequest() {
+  public SimpleRequest() {
     this(HttpMethod.ANY, ROOT);
   }
 
-  public ServerRequest(String path) {
+  public SimpleRequest(String path) {
     this(HttpMethod.ANY, path);
   }
 
-  public ServerRequest(HttpMethod method, String path) {
+  public SimpleRequest(HttpMethod method, String path) {
     this.method = method;
     this.path = path;
   }
@@ -51,7 +52,7 @@ public class ServerRequest {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    ServerRequest that = (ServerRequest) o;
+    SimpleRequest that = (SimpleRequest) o;
 
     if (method != that.method) return false;
     return path != null ? path.equals(that.path) : that.path == null;

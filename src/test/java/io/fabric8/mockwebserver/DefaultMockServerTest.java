@@ -19,15 +19,15 @@ package io.fabric8.mockwebserver;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import junit.framework.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import static org.junit.Assert.*;
 
 public class DefaultMockServerTest {
 
     @Test
-    public void testDsl() throws IOException {
+    public void testSimpleRequest() throws IOException {
         DefaultMockServer defaultMockServer = new DefaultMockServer();
         defaultMockServer.expect().get().withPath("/").andReturn(200, "line").once();
         defaultMockServer.start();
@@ -35,7 +35,19 @@ public class DefaultMockServerTest {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(defaultMockServer.url("/")).get().build();
         Response response = client.newCall(request).execute();
-        Assert.assertEquals(200, response.code());
+        assertEquals(200, response.code());
+    }
+
+    @Test
+    public void testChunked() throws IOException {
+        DefaultMockServer defaultMockServer = new DefaultMockServer();
+        defaultMockServer.expect().get().withPath("/").andReturnChucked(200, "line1", "line2", "line3").once();
+        defaultMockServer.start();
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(defaultMockServer.url("/")).get().build();
+        Response response = client.newCall(request).execute();
+        assertEquals(200, response.code());
     }
 
 }

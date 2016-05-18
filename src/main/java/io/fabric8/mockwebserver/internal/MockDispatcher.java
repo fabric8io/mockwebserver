@@ -20,6 +20,8 @@ package io.fabric8.mockwebserver.internal;
 import com.squareup.okhttp.mockwebserver.Dispatcher;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import io.fabric8.mockwebserver.ServerRequest;
+import io.fabric8.mockwebserver.ServerResponse;
 import io.fabric8.mockwebserver.dsl.HttpMethod;
 
 import java.util.Map;
@@ -37,8 +39,8 @@ public class MockDispatcher extends Dispatcher {
     public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
         HttpMethod method = HttpMethod.valueOf(request.getMethod());
         String path = request.getPath();
-        ServerRequest key = new ServerRequest(method, path);
-        ServerRequest keyForAnyMethod = new ServerRequest(path);
+        SimpleRequest key = new SimpleRequest(method, path);
+        SimpleRequest keyForAnyMethod = new SimpleRequest(path);
         if (responses.containsKey(key)) {
             Queue<ServerResponse> queue = responses.get(key);
             return handleResponse(queue.peek(), queue);
@@ -55,14 +57,7 @@ public class MockDispatcher extends Dispatcher {
         } else if (!response.isRepeatable()) {
             queue.remove();
         }
-        MockResponse mockResponse = new MockResponse();
-        if (response.getWebSocketSession() != null) {
-            mockResponse.withWebSocketUpgrade(response.getWebSocketSession());
-        } else {
-            mockResponse.setBody(response.getBody());
-            mockResponse.setResponseCode(response.getStatusCode());
-        }
-        return mockResponse;
+        return response.toMockResponse();
     }
 
 }

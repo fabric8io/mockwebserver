@@ -21,8 +21,6 @@ import io.fabric8.mockwebserver.dsl.MockServerExpectation;
 import io.fabric8.mockwebserver.internal.MockDispatcher;
 import io.fabric8.mockwebserver.internal.MockSSLContextFactory;
 import io.fabric8.mockwebserver.internal.MockServerExpectationImpl;
-import io.fabric8.mockwebserver.internal.ServerRequest;
-import io.fabric8.mockwebserver.internal.ServerResponse;
 
 import java.io.IOException;
 import java.net.InetAddress;
