@@ -58,9 +58,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:fabric8io/kubernetes-client.git</connection>
-        <developerConnection>scm:git:git@github.com:fabric8io/kubernetes-client.git</developerConnection>
-        <url>http://github.com/fabric8io/kubernetes-client/</url>
+        <connection>scm:git:git@github.com:fabric8io/mockwebserver.git</connection>
+        <developerConnection>scm:git:git@github.com:fabric8io/mockwebserver.git</developerConnection>
+        <url>http://github.com/fabric8io/mockwebserver/</url>
         <tag>${project.version}</tag>
     </scm>
 
@@ -75,7 +75,6 @@
     <properties>
         <okhttp.version>2.7.2</okhttp.version>
         <jackson.version>2.7.0</jackson.version>
-
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
