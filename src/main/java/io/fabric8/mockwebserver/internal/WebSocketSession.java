@@ -16,13 +16,12 @@
 
 package io.fabric8.mockwebserver.internal;
 
-import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
 import com.squareup.okhttp.ws.WebSocket;
 import com.squareup.okhttp.ws.WebSocketListener;
+import io.fabric8.mockwebserver.Context;
 import okio.Buffer;
-import okio.ByteString;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,16 +44,16 @@ public class WebSocketSession implements WebSocketListener {
     private final List<WebSocketMessage> timedEvents = new ArrayList<>();
 
     private final AtomicReference<WebSocket> webSocketRef = new AtomicReference<>();
-
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
+    private final Context context;
 
-    public WebSocketSession(List<WebSocketMessage> open, WebSocketMessage failure, Exception cause) {
+    public WebSocketSession(Context context, List<WebSocketMessage> open, WebSocketMessage failure, Exception cause) {
+        this.context = context;
         this.open = open;
         this.failure = failure;
         this.cause = cause;
     }
-
 
     @Override
     public void onOpen(WebSocket webSocket, Response response) {
@@ -77,7 +76,7 @@ public class WebSocketSession implements WebSocketListener {
 
     @Override
     public void onMessage(ResponseBody message) throws IOException {
-        String in = read(message);
+        String in = new String(context.getReader().read(message));
         Queue<WebSocketMessage> queue = requestEvents.get(in);
         if (queue != null && !queue.isEmpty()) {
             WebSocketMessage msg = queue.peek();
@@ -144,32 +143,12 @@ public class WebSocketSession implements WebSocketListener {
                 try {
                     WebSocket ws = webSocketRef.get();
                     if (ws != null) {
-                        ws.sendMessage(RequestBody.create(WebSocket.BINARY, message.getBytes()));
+                        ws.sendMessage(context.getWriter().write(message.getBytes()));
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
         }, message.getDelay(), TimeUnit.MILLISECONDS);
-    }
-
-    private String read(ResponseBody message) throws IOException {
-        try {
-            byte streamID = message.source().readByte();
-            ByteString byteString = message.source().readByteString();
-            if (byteString.size() > 0) {
-                switch (streamID) {
-                    case 1:
-                    case 2:
-                    case 3:
-                        return byteString.toString();
-                    default:
-                        throw new IOException("Unknown stream ID " + streamID);
-                }
-            }
-        } finally {
-            message.close();
-        }
-        throw new IllegalArgumentException("Not a string message");
     }
 }

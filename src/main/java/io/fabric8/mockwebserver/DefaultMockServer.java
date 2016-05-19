@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DefaultMockServer {
 
+  private final Context context;
   private final boolean useHttps;
   private final MockWebServer server;
   private final Map<ServerRequest, Queue<ServerResponse>> responses;
@@ -40,14 +41,19 @@ public class DefaultMockServer {
   private final AtomicBoolean shutdown = new AtomicBoolean();
 
   public DefaultMockServer() {
-    this(new MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), false);
+    this(new Context(), new MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), false);
   }
 
   public DefaultMockServer(boolean useHttps) {
-    this(new MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), useHttps);
+    this(new Context(), new MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), useHttps);
   }
 
   public DefaultMockServer(MockWebServer server, Map<ServerRequest, Queue<ServerResponse>> responses, boolean useHttps) {
+    this(new Context(), server, responses, useHttps);
+  }
+
+  public DefaultMockServer(Context context, MockWebServer server, Map<ServerRequest, Queue<ServerResponse>> responses, boolean useHttps) {
+    this.context = context;
     this.useHttps = useHttps;
     this.server = server;
     this.responses = responses;
@@ -151,6 +157,6 @@ public class DefaultMockServer {
   }
 
   public MockServerExpectation expect() {
-    return new MockServerExpectationImpl(responses);
+    return new MockServerExpectationImpl(responses, context);
   }
 }

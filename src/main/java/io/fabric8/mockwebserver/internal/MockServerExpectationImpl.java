@@ -17,7 +17,7 @@
 package io.fabric8.mockwebserver.internal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.fabric8.mockwebserver.Context;
 import io.fabric8.mockwebserver.ServerRequest;
 import io.fabric8.mockwebserver.ServerResponse;
 import io.fabric8.mockwebserver.dsl.Function;
@@ -35,8 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MockServerExpectationImpl implements MockServerExpectation {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
-
+  private final Context context;
   private final HttpMethod method;
   private final String path;
   private final int statusCode;
@@ -49,10 +48,11 @@ public class MockServerExpectationImpl implements MockServerExpectation {
 
   private final Map<ServerRequest, Queue<ServerResponse>> responses;
 
-  public MockServerExpectationImpl(Map<ServerRequest, Queue<ServerResponse>> responses) {
-    this(HttpMethod.ANY, null, 200, null, null, 0, 0, TimeUnit.SECONDS, 1, responses);
+  public MockServerExpectationImpl(Map<ServerRequest, Queue<ServerResponse>> responses, Context context) {
+    this(context, HttpMethod.ANY, null, 200, null, null, 0, 0, TimeUnit.SECONDS, 1, responses);
   }
-  public MockServerExpectationImpl(HttpMethod method, String path, int statusCode, String body, String[] chunks, long initialDelay, long period, TimeUnit timeUnit, int times, Map<ServerRequest, Queue<ServerResponse>> responses) {
+  public MockServerExpectationImpl(Context context, HttpMethod method, String path, int statusCode, String body, String[] chunks, long initialDelay, long period, TimeUnit timeUnit, int times, Map<ServerRequest, Queue<ServerResponse>> responses) {
+    this.context = context;
     this.method = method;
     this.path = path;
     this.statusCode = statusCode;
@@ -67,42 +67,42 @@ public class MockServerExpectationImpl implements MockServerExpectation {
 
   @Override
   public Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> any() {
-    return new MockServerExpectationImpl(HttpMethod.ANY, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
+    return new MockServerExpectationImpl(context, HttpMethod.ANY, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
   }
 
   @Override
   public Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> post() {
-    return new MockServerExpectationImpl(HttpMethod.POST, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
+    return new MockServerExpectationImpl(context, HttpMethod.POST, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
   }
 
   @Override
   public Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> get() {
-    return new MockServerExpectationImpl(HttpMethod.GET, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
+    return new MockServerExpectationImpl(context, HttpMethod.GET, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
   }
 
   @Override
   public Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> put() {
-    return new MockServerExpectationImpl(HttpMethod.PUT, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
+    return new MockServerExpectationImpl(context, HttpMethod.PUT, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
   }
 
   @Override
   public Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> delete() {
-    return new MockServerExpectationImpl(HttpMethod.DELETE, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
+    return new MockServerExpectationImpl(context, HttpMethod.DELETE, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
   }
 
   @Override
   public ReturnOrWebsocketable<TimesOrOnceable<Void>> withPath(String path) {
-    return new MockServerExpectationImpl(method, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
+    return new MockServerExpectationImpl(context, method, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
   }
 
   @Override
   public TimesOrOnceable<Void> andReturn(int statusCode, Object content) {
-    return new MockServerExpectationImpl(method, path, statusCode, toString(content), chunks, initialDelay, period, timeUnit, times, responses);
+    return new MockServerExpectationImpl(context, method, path, statusCode, toString(content), chunks, initialDelay, period, timeUnit, times, responses);
   }
 
   @Override
   public TimesOrOnceable<Void> andReturnChucked(int statusCode, Object... contents) {
-    return new MockServerExpectationImpl(method, path, statusCode, body, toString(contents), initialDelay, period, timeUnit, times, responses);
+    return new MockServerExpectationImpl(context, method, path, statusCode, body, toString(contents), initialDelay, period, timeUnit, times, responses);
   }
 
   @Override
@@ -127,7 +127,7 @@ public class MockServerExpectationImpl implements MockServerExpectation {
 
   @Override
   public WebSocketSessionBuilder<TimesOrOnceable<Void>> andUpgradeToWebSocket() {
-    return new InlineWebSocketSessionBuilder<>(new Function<WebSocketSession, TimesOrOnceable<Void>>() {
+    return new InlineWebSocketSessionBuilder<>(context, new Function<WebSocketSession, TimesOrOnceable<Void>>() {
       @Override
       public TimesOrOnceable<Void> apply(final WebSocketSession webSocketSession) {
         return new TimesOrOnceable<Void>() {
@@ -174,19 +174,19 @@ public class MockServerExpectationImpl implements MockServerExpectation {
     }
   }
 
-  private static String toString(Object object) {
+  private String toString(Object object) {
     if (object instanceof String) {
       return (String) object;
     } else {
       try {
-        return MAPPER.writeValueAsString(object);
+        return context.getMapper().writeValueAsString(object);
       } catch (JsonProcessingException e) {
         throw new RuntimeException(e);
       }
     }
   }
 
-  private static String[] toString(Object object[]) {
+  private String[] toString(Object object[]) {
     String[] strings = new String[object.length];
     for (int i=0;i<object.length;i++) {
       strings[i] = toString(object[i]);
