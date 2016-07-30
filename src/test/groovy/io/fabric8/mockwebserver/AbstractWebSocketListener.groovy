@@ -14,16 +14,13 @@
  *   limitations under the License.
  */
 
-package io.fabric8.mockwebserver;
+package io.fabric8.mockwebserver
 
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
-import com.squareup.okhttp.ws.WebSocket;
-import com.squareup.okhttp.ws.WebSocketListener;
-import okio.Buffer;
-
-import java.io.IOException;
-
+import okhttp3.Response
+import okhttp3.ResponseBody
+import okhttp3.ws.WebSocket
+import okhttp3.ws.WebSocketListener
+import okio.Buffer
 /**
  * Just for the shake of anonymous inner classes
  */

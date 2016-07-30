@@ -16,10 +16,10 @@
 
 package io.fabric8.mockwebserver
 
-import com.squareup.okhttp.*
-import com.squareup.okhttp.ws.WebSocket
-import com.squareup.okhttp.ws.WebSocketCall
-import com.squareup.okhttp.ws.WebSocketListener
+import okhttp3.*
+import okhttp3.ws.WebSocket
+import okhttp3.ws.WebSocketCall
+import okhttp3.ws.WebSocketListener
 import spock.lang.Shared
 import spock.lang.Specification
 

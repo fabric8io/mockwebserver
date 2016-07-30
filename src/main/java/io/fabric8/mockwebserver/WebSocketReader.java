@@ -16,7 +16,7 @@
 
 package io.fabric8.mockwebserver;
 
-import com.squareup.okhttp.ResponseBody;
+import okhttp3.ResponseBody;
 
 public interface WebSocketReader {
 

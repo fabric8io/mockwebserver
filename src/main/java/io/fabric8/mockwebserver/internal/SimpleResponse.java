@@ -16,7 +16,7 @@
 
 package io.fabric8.mockwebserver.internal;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockResponse;
 import io.fabric8.mockwebserver.ServerResponse;
 
 public class SimpleResponse implements ServerResponse {

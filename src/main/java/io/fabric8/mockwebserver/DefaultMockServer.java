@@ -16,7 +16,7 @@
 
 package io.fabric8.mockwebserver;
 
-import com.squareup.okhttp.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.MockWebServer;
 import io.fabric8.mockwebserver.dsl.MockServerExpectation;
 import io.fabric8.mockwebserver.internal.MockDispatcher;
 import io.fabric8.mockwebserver.internal.MockSSLContextFactory;

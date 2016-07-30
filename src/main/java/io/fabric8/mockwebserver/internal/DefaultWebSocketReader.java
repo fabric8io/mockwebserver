@@ -16,7 +16,7 @@
 
 package io.fabric8.mockwebserver.internal;
 
-import com.squareup.okhttp.ResponseBody;
+import okhttp3.ResponseBody;
 import io.fabric8.mockwebserver.WebSocketReader;
 import io.fabric8.mockwebserver.utils.Closeables;
 
