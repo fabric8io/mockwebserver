@@ -16,10 +16,10 @@
 
 package io.fabric8.mockwebserver.internal;
 
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
-import com.squareup.okhttp.ws.WebSocket;
-import com.squareup.okhttp.ws.WebSocketListener;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.ws.WebSocket;
+import okhttp3.ws.WebSocketListener;
 import io.fabric8.mockwebserver.Context;
 import okio.Buffer;
 

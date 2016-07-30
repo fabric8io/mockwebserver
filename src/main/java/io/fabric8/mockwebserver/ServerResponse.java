@@ -16,7 +16,7 @@
 
 package io.fabric8.mockwebserver;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockResponse;
 
 public interface ServerResponse {
 

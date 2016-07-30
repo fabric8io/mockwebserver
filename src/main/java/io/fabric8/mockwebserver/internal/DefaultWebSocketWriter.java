@@ -16,10 +16,9 @@
 
 package io.fabric8.mockwebserver.internal;
 
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.ResponseBody;
-import com.squareup.okhttp.ws.WebSocket;
 import io.fabric8.mockwebserver.WebSocketWriter;
+import okhttp3.RequestBody;
+import okhttp3.ws.WebSocket;
 
 public class DefaultWebSocketWriter implements WebSocketWriter {
 
