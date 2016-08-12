@@ -28,4 +28,6 @@ public interface HttpMethodable<T> {
 
   T delete();
 
+  T patch();
+
 }
