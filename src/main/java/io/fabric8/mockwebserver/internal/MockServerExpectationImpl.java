@@ -106,7 +106,13 @@ public class MockServerExpectationImpl implements MockServerExpectation {
   }
 
   @Override
+  @Deprecated
   public TimesOrOnceable<Void> andReturnChucked(int statusCode, Object... contents) {
+    return andReturnChunked(statusCode, contents);
+  }
+
+  @Override
+  public TimesOrOnceable<Void> andReturnChunked(int statusCode, Object... contents) {
     return new MockServerExpectationImpl(context, method, path, statusCode, body, toString(contents), initialDelay, period, timeUnit, times, responses);
   }
 
