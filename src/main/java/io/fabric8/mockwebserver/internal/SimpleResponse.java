@@ -19,6 +19,8 @@ package io.fabric8.mockwebserver.internal;
 import okhttp3.mockwebserver.MockResponse;
 import io.fabric8.mockwebserver.ServerResponse;
 
+import java.util.concurrent.TimeUnit;
+
 public class SimpleResponse implements ServerResponse {
 
   private final int statusCode;
@@ -26,12 +28,20 @@ public class SimpleResponse implements ServerResponse {
 
   private final WebSocketSession webSocketSession;
   private final boolean repeatable;
+  private final long responseDelay;
+  private final TimeUnit responseDelayUnit;
 
   public SimpleResponse(boolean repeatable, int statusCode, String body, WebSocketSession webSocketSession) {
+    this(repeatable, statusCode, body, webSocketSession, 0, TimeUnit.MILLISECONDS);
+  }
+
+  public SimpleResponse(boolean repeatable, int statusCode, String body, WebSocketSession webSocketSession, long responseDelay, TimeUnit responseDelayUnit) {
     this.statusCode = statusCode;
     this.body = body;
     this.webSocketSession = webSocketSession;
     this.repeatable = repeatable;
+    this.responseDelay = responseDelay;
+    this.responseDelayUnit = responseDelayUnit;
   }
 
   public int getStatusCode() {
@@ -50,6 +60,11 @@ public class SimpleResponse implements ServerResponse {
       mockResponse.setBody(body);
       mockResponse.setResponseCode(statusCode);
     }
+
+    if (responseDelay > 0) {
+      mockResponse.setBodyDelay(responseDelay, responseDelayUnit);
+    }
+
     return mockResponse;
   }
 

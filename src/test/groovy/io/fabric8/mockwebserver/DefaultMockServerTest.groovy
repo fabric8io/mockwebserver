@@ -197,4 +197,19 @@ public class DefaultMockServerTest extends Specification {
         ws.close(1000, "just close")
         closed.await(2, TimeUnit.SECONDS)
     }
+
+    def "when setting a delayed response it should be delayed for the specified duration"() {
+        given:
+        server.expect().get().withPath("/api/v1/users").delay(100, TimeUnit.MILLISECONDS).andReturn(200, "admin").once()
+
+        when:
+        Request request = new Request.Builder().url(server.url("/api/v1/users")).get().build()
+        long startTime = System.currentTimeMillis()
+        Response response1 = client.newCall(request).execute()
+
+        then:
+        response1.code() == 200
+        response1.body().string() == "admin"
+        System.currentTimeMillis() - startTime >= 100
+    }
 }
