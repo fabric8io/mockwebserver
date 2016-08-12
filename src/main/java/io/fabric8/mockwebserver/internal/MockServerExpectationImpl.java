@@ -91,6 +91,11 @@ public class MockServerExpectationImpl implements MockServerExpectation {
   }
 
   @Override
+  public Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> patch() {
+    return new MockServerExpectationImpl(context, HttpMethod.PATCH, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
+  }
+
+  @Override
   public ReturnOrWebsocketable<TimesOrOnceable<Void>> withPath(String path) {
     return new MockServerExpectationImpl(context, method, path, statusCode, body, chunks, initialDelay, period, timeUnit, times, responses);
   }
