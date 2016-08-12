@@ -15,8 +15,8 @@
  */
 package io.fabric8.mockwebserver.dsl;
 
-public interface MockServerExpectation extends HttpMethodable<Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>>>,
-        Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>>,
+public interface MockServerExpectation extends HttpMethodable<DelayPathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>>>,
+        DelayPathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>>,
         ReturnOrWebsocketable<TimesOrOnceable<Void>>,
         TimesOrOnceable<Void> {
 

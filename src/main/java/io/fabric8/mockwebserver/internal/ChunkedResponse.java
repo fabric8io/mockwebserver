@@ -16,11 +16,12 @@
 
 package io.fabric8.mockwebserver.internal;
 
-import okhttp3.mockwebserver.MockResponse;
 import io.fabric8.mockwebserver.ServerResponse;
+import okhttp3.mockwebserver.MockResponse;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class ChunkedResponse implements ServerResponse {
 
@@ -28,11 +29,19 @@ public class ChunkedResponse implements ServerResponse {
     private final int statusCode;
     private final List<String> body;
     private final boolean repeatable;
+    private final long responseDelay;
+    private final TimeUnit responseDelayUnit;
 
     public ChunkedResponse(boolean repeatable, int statusCode, String... body) {
+        this(repeatable, statusCode, 0, TimeUnit.MILLISECONDS, body);
+    }
+
+    public ChunkedResponse(boolean repeatable, int statusCode, long responseDelay, TimeUnit responseDelayUnit, String... body) {
         this.statusCode = statusCode;
         this.body = Arrays.asList(body);
         this.repeatable = repeatable;
+        this.responseDelay = responseDelay;
+        this.responseDelayUnit = responseDelayUnit;
     }
 
     public int getStatusCode() {
@@ -47,6 +56,11 @@ public class ChunkedResponse implements ServerResponse {
         MockResponse mockResponse = new MockResponse();
         mockResponse.setChunkedBody(concatBody(), DEFAULT_MAX_CHUNK_SIZE);
         mockResponse.setResponseCode(statusCode);
+
+        if (responseDelay > 0) {
+            mockResponse.setBodyDelay(responseDelay, responseDelayUnit);
+        }
+
         return mockResponse;
     }
 
