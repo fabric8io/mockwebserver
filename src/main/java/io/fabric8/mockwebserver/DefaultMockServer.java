@@ -16,11 +16,12 @@
 
 package io.fabric8.mockwebserver;
 
-import okhttp3.mockwebserver.MockWebServer;
 import io.fabric8.mockwebserver.dsl.MockServerExpectation;
 import io.fabric8.mockwebserver.internal.MockDispatcher;
 import io.fabric8.mockwebserver.internal.MockSSLContextFactory;
 import io.fabric8.mockwebserver.internal.MockServerExpectationImpl;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -28,6 +29,7 @@ import java.net.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DefaultMockServer {
@@ -158,5 +160,13 @@ public class DefaultMockServer {
 
   public MockServerExpectation expect() {
     return new MockServerExpectationImpl(responses, context);
+  }
+
+  public RecordedRequest takeRequest() throws InterruptedException {
+    return server.takeRequest();
+  }
+
+  public RecordedRequest takeRequest(long timeout, TimeUnit unit) throws InterruptedException {
+    return server.takeRequest(timeout, unit);
   }
 }
