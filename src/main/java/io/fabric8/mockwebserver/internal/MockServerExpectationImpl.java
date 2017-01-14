@@ -147,7 +147,7 @@ public class MockServerExpectationImpl implements MockServerExpectation {
 
   @Override
   public WebSocketSessionBuilder<TimesOrOnceable<Void>> andUpgradeToWebSocket() {
-    return new InlineWebSocketSessionBuilder<>(context, new Function<WebSocketSession, TimesOrOnceable<Void>>() {
+    return new InlineWebSocketSessionBuilder<>(new Function<WebSocketSession, TimesOrOnceable<Void>>() {
       @Override
       public TimesOrOnceable<Void> apply(final WebSocketSession webSocketSession) {
         return new TimesOrOnceable<Void>() {
