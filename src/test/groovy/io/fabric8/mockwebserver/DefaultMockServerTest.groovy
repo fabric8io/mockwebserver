@@ -17,9 +17,7 @@
 package io.fabric8.mockwebserver
 
 import okhttp3.*
-import okhttp3.ws.WebSocket
-import okhttp3.ws.WebSocketCall
-import okhttp3.ws.WebSocketListener
+import okhttp3.internal.tls.OkHostnameVerifier
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -81,7 +79,7 @@ public class DefaultMockServerTest extends Specification {
         response4.code() == 404
     }
 
-    def "when setting an expectation with alwyas it should be met only alwayas"() {
+    def "when setting an expectation with always it should be met only always"() {
         given:
         server.expect().get().withPath("/api/v1/users").andReturn(200, "admin").always()
 
@@ -122,11 +120,19 @@ public class DefaultMockServerTest extends Specification {
         given:
         CountDownLatch closed = new CountDownLatch(1)
         Queue<String> messages = new ArrayBlockingQueue<String>(1)
-        WebSocketListener listener = new AbstractWebSocketListener() {
-            void onMessage(ResponseBody message) throws IOException {
-                messages.add(message.string())
+        WebSocketListener listener = new WebSocketListener() {
+            @Override
+            void onOpen(WebSocket webSocket, Response response) {
+                print(">>>> Open: " + webSocket)
             }
-            void onClose(int code, String reason) {
+
+            @Override
+            void onMessage(WebSocket socket, String text) throws IOException {
+                messages.add(text)
+            }
+
+            @Override
+            void onClosed(WebSocket socket, int code, String reason) {
                 closed.countDown()
             }
         }
@@ -134,14 +140,13 @@ public class DefaultMockServerTest extends Specification {
         server.expect().get().withPath("/api/v1/users/watch")
             .andUpgradeToWebSocket()
                 .open()
-                .waitFor(1000).andEmit("DELETED")
+                .waitFor(5000).andEmit("DELETED")
                 .done()
             .once()
 
         when:
         Request request = new Request.Builder().url(server.url("/api/v1/users/watch")).get().build()
-        WebSocketCall call = WebSocketCall.create(client, request)
-        call.enqueue(listener)
+        client.newWebSocket(request, listener)
 
         then:
         messages.poll(2, TimeUnit.SECONDS) == "DELETED"
@@ -153,22 +158,20 @@ public class DefaultMockServerTest extends Specification {
         CountDownLatch opened = new CountDownLatch(1)
         CountDownLatch closed = new CountDownLatch(1)
         Queue<String> messages = new ArrayBlockingQueue<String>(1)
-        AtomicReference<WebSocket> webSocketRef = new AtomicReference<>()
 
-        WebSocketListener listener = new AbstractWebSocketListener() {
+        WebSocketListener listener = new WebSocketListener() {
             @Override
             void onOpen(WebSocket webSocket, Response response) {
-                webSocketRef.set(webSocket)
                 opened.countDown()
             }
 
             @Override
-            void onMessage(ResponseBody message) throws IOException {
-                messages.add(message.string())
+            void onMessage(WebSocket webSocket, String text) throws IOException {
+                messages.add(text)
             }
 
             @Override
-            void onClose(int code, String reason) {
+            void onClosed(WebSocket webSocket, int code, String reason) {
                 closed.countDown()
             }
         }
@@ -181,18 +184,15 @@ public class DefaultMockServerTest extends Specification {
                 .done()
                 .once()
 
-
         when:
         Request request = new Request.Builder().url(server.url("/api/v1/users/watch")).get().build()
-        WebSocketCall call = WebSocketCall.create(client, request)
-        call.enqueue(listener)
+        WebSocket ws = client.newWebSocket(request, listener)
 
         then:
         opened.await(1, TimeUnit.SECONDS)
-        WebSocket ws = webSocketRef.get()
-        ws.sendMessage(RequestBody.create(WebSocket.TEXT, "create root"))
+        ws.send( "create root")
         messages.poll(2, TimeUnit.SECONDS) == "CREATED"
-        ws.sendMessage(RequestBody.create(WebSocket.TEXT, "delete root"))
+        ws.send( "delete root")
         messages.poll(2, TimeUnit.SECONDS) == "DELETED"
         ws.close(1000, "just close")
         closed.await(2, TimeUnit.SECONDS)
