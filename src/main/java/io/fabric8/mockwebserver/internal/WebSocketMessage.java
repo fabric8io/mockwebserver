@@ -15,24 +15,49 @@
  */
 package io.fabric8.mockwebserver.internal;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 public class WebSocketMessage {
 
     private final Long delay;
-    private final String body;
+    private final byte[] body;
     private final boolean toBeRemoved;
+    private final boolean binary;
 
     public WebSocketMessage(String body) {
         this(0L, body, true);
     }
 
+    public WebSocketMessage(byte[] body) {
+        this(0L, body, true, true);
+    }
+
     public WebSocketMessage(String body, boolean toBeRemoved) {
-        this(0L, body, toBeRemoved);
+        this(0L, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, false);
+    }
+
+    public WebSocketMessage(byte[] body, boolean toBeRemoved) {
+        this(0L, body, toBeRemoved, true);
     }
 
     public WebSocketMessage(Long delay, String body, boolean toBeRemoved) {
+        this(delay, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, false);
+    }
+
+    public WebSocketMessage(Long delay, byte[] body, boolean toBeRemoved) {
+        this(delay, body, toBeRemoved, true);
+    }
+
+    public WebSocketMessage(Long delay, String body, boolean toBeRemoved, boolean binary) {
+        this(delay, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, binary);
+    }
+
+    public WebSocketMessage(Long delay, byte[] body, boolean toBeRemoved, boolean binary) {
         this.delay = delay;
         this.body = body;
         this.toBeRemoved = toBeRemoved;
+        this.binary = binary;
     }
 
     public Long getDelay() {
@@ -40,7 +65,7 @@ public class WebSocketMessage {
     }
 
     public String getBody() {
-        return body;
+        return new String(body);
     }
 
     public boolean isToBeRemoved() {
@@ -48,6 +73,10 @@ public class WebSocketMessage {
     }
 
     public byte[] getBytes() {
-        return body.getBytes();
+        return body;
+    }
+
+    public boolean isBinary() {
+        return binary;
     }
 }

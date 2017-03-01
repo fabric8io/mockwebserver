@@ -142,7 +142,11 @@ public class WebSocketSession extends WebSocketListener {
             public void run() {
                 WebSocket ws = webSocketRef.get();
                 if (ws != null) {
-                    ws.send(message.getBody());
+                    if (message.isBinary()) {
+                        ws.send(ByteString.of(message.getBytes()));
+                    } else {
+                        ws.send(message.getBody());
+                    }
                 }
             }
         }, message.getDelay(), TimeUnit.MILLISECONDS);
