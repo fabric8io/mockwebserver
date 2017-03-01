@@ -16,10 +16,12 @@
 
 package io.fabric8.mockwebserver
 
-import okhttp3.*
-import okhttp3.ws.WebSocket
-import okhttp3.ws.WebSocketCall
-import okhttp3.ws.WebSocketListener
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import okio.ByteString
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -122,11 +124,12 @@ public class DefaultMockServerTest extends Specification {
         given:
         CountDownLatch closed = new CountDownLatch(1)
         Queue<String> messages = new ArrayBlockingQueue<String>(1)
-        WebSocketListener listener = new AbstractWebSocketListener() {
-            void onMessage(ResponseBody message) throws IOException {
-                messages.add(message.string())
+        WebSocketListener listener = new WebSocketListener()  {
+            void onMessage(WebSocket webSocket, String text) {
+                messages.add(text)
             }
-            void onClose(int code, String reason) {
+
+            void onClosing(WebSocket webSocket, int code, String reason) {
                 closed.countDown()
             }
         }
@@ -140,8 +143,7 @@ public class DefaultMockServerTest extends Specification {
 
         when:
         Request request = new Request.Builder().url(server.url("/api/v1/users/watch")).get().build()
-        WebSocketCall call = WebSocketCall.create(client, request)
-        call.enqueue(listener)
+        client.newWebSocket(request, listener)
 
         then:
         messages.poll(2, TimeUnit.SECONDS) == "DELETED"
@@ -155,7 +157,7 @@ public class DefaultMockServerTest extends Specification {
         Queue<String> messages = new ArrayBlockingQueue<String>(1)
         AtomicReference<WebSocket> webSocketRef = new AtomicReference<>()
 
-        WebSocketListener listener = new AbstractWebSocketListener() {
+        WebSocketListener listener = new WebSocketListener() {
             @Override
             void onOpen(WebSocket webSocket, Response response) {
                 webSocketRef.set(webSocket)
@@ -163,12 +165,23 @@ public class DefaultMockServerTest extends Specification {
             }
 
             @Override
-            void onMessage(ResponseBody message) throws IOException {
-                messages.add(message.string())
+            void onMessage(WebSocket webSocket, String text) {
+                messages.add(text)
             }
 
             @Override
-            void onClose(int code, String reason) {
+            void onMessage(WebSocket webSocket, ByteString byteString) {
+                messages.add(new String(byteString.toByteArray()))
+            }
+
+
+            @Override
+            void onClosed(WebSocket webSocket, int code, String reason) {
+                closed.countDown()
+            }
+
+            @Override
+            void onClosing(WebSocket webSocket, int code, String reason) {
                 closed.countDown()
             }
         }
@@ -184,15 +197,14 @@ public class DefaultMockServerTest extends Specification {
 
         when:
         Request request = new Request.Builder().url(server.url("/api/v1/users/watch")).get().build()
-        WebSocketCall call = WebSocketCall.create(client, request)
-        call.enqueue(listener)
+        client.newWebSocket(request, listener)
 
         then:
         opened.await(1, TimeUnit.SECONDS)
         WebSocket ws = webSocketRef.get()
-        ws.sendMessage(RequestBody.create(WebSocket.TEXT, "create root"))
+        ws.send("create root")
         messages.poll(2, TimeUnit.SECONDS) == "CREATED"
-        ws.sendMessage(RequestBody.create(WebSocket.TEXT, "delete root"))
+        ws.send("delete root")
         messages.poll(2, TimeUnit.SECONDS) == "DELETED"
         ws.close(1000, "just close")
         closed.await(2, TimeUnit.SECONDS)

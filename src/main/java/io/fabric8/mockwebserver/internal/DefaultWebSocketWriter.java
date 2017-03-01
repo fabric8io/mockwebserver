@@ -17,14 +17,14 @@
 package io.fabric8.mockwebserver.internal;
 
 import io.fabric8.mockwebserver.WebSocketWriter;
+import okhttp3.MediaType;
 import okhttp3.RequestBody;
-import okhttp3.ws.WebSocket;
 
 public class DefaultWebSocketWriter implements WebSocketWriter {
 
     @Override
     public RequestBody write(byte[] input) {
-        return RequestBody.create(WebSocket.BINARY, input);
+        return RequestBody.create(MediaType.parse("application/vnd.okhttp.websocket+binary"), input);
     }
 
 }
