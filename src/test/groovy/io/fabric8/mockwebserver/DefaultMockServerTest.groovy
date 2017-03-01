@@ -178,7 +178,11 @@ class DefaultMockServerTest extends Specification {
 
         then:
         messages.poll(10, TimeUnit.SECONDS) == "DELETED"
+
+        when:
         webSocketRef.get().close(1000, "just close")
+
+        then:
         closed.await(10, TimeUnit.SECONDS)
     }
 
@@ -237,7 +241,11 @@ class DefaultMockServerTest extends Specification {
         ws.send("delete root")
         messages.poll(10, TimeUnit.SECONDS) == "CREATED"
         messages.poll(10, TimeUnit.SECONDS) == "DELETED"
+
+        when:
         ws.close(1000, "just close")
+
+        then:
         closed.await(10, TimeUnit.SECONDS)
     }
 
