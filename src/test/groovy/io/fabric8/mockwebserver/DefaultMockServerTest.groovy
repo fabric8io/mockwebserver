@@ -177,9 +177,9 @@ class DefaultMockServerTest extends Specification {
         webSocketRef.set(client.newWebSocket(request, listener))
 
         then:
-        messages.poll(2, TimeUnit.SECONDS) == "DELETED"
+        messages.poll(10, TimeUnit.SECONDS) == "DELETED"
         webSocketRef.get().close(1000, "just close")
-        closed.await(2, TimeUnit.SECONDS)
+        closed.await(10, TimeUnit.SECONDS)
     }
 
     def "when setting a request/response websocket message it should be fired when the event is triggered"() {
@@ -231,14 +231,14 @@ class DefaultMockServerTest extends Specification {
         webSocketRef.set(client.newWebSocket(request, listener))
 
         then:
-        opened.await(1, TimeUnit.SECONDS)
+        opened.await(10, TimeUnit.SECONDS)
         WebSocket ws = webSocketRef.get()
         ws.send("create root")
         ws.send("delete root")
-        messages.poll(2, TimeUnit.SECONDS) == "CREATED"
-        messages.poll(2, TimeUnit.SECONDS) == "DELETED"
+        messages.poll(10, TimeUnit.SECONDS) == "CREATED"
+        messages.poll(10, TimeUnit.SECONDS) == "DELETED"
         ws.close(1000, "just close")
-        closed.await(2, TimeUnit.SECONDS)
+        closed.await(10, TimeUnit.SECONDS)
     }
 
     def "when setting a delayed response it should be delayed for the specified duration"() {
