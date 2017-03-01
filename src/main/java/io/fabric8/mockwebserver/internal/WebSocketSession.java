@@ -18,10 +18,11 @@ package io.fabric8.mockwebserver.internal;
 
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.ws.WebSocket;
-import okhttp3.ws.WebSocketListener;
 import io.fabric8.mockwebserver.Context;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 import okio.Buffer;
+import okio.ByteString;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class WebSocketSession implements WebSocketListener {
+public class WebSocketSession extends WebSocketListener {
 
     private final List<WebSocketMessage> open;
     private final WebSocketMessage failure;
@@ -47,6 +48,11 @@ public class WebSocketSession implements WebSocketListener {
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     private final Context context;
+
+    @Override
+    public void onClosing(WebSocket webSocket, int code, String reason) {
+        webSocketRef.get().close(code, reason);
+    }
 
     public WebSocketSession(Context context, List<WebSocketMessage> open, WebSocketMessage failure, Exception cause) {
         this.context = context;
@@ -71,12 +77,12 @@ public class WebSocketSession implements WebSocketListener {
     }
 
     @Override
-    public void onFailure(IOException e, Response response) {
+    public void onMessage(WebSocket webSocket, ByteString bytes) {
+        onMessage(webSocket, bytes.utf8());
     }
 
     @Override
-    public void onMessage(ResponseBody message) throws IOException {
-        String in = new String(context.getReader().read(message));
+    public void onMessage(WebSocket webSocket, String in) {
         Queue<WebSocketMessage> queue = requestEvents.get(in);
         if (queue != null && !queue.isEmpty()) {
             WebSocketMessage msg = queue.peek();
@@ -91,13 +97,7 @@ public class WebSocketSession implements WebSocketListener {
     }
 
     @Override
-    public void onPong(Buffer payload) {
-
-    }
-
-    @Override
-    public void onClose(int code, String reason) {
-
+    public void onClosed(WebSocket webSocket, int code, String reason) {
     }
 
     public List<WebSocketMessage> getOpen() {
@@ -140,13 +140,9 @@ public class WebSocketSession implements WebSocketListener {
         executor.schedule(new Runnable() {
             @Override
             public void run() {
-                try {
-                    WebSocket ws = webSocketRef.get();
-                    if (ws != null) {
-                        ws.sendMessage(context.getWriter().write(message.getBytes()));
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                WebSocket ws = webSocketRef.get();
+                if (ws != null) {
+                    ws.send(message.getBody());
                 }
             }
         }, message.getDelay(), TimeUnit.MILLISECONDS);
