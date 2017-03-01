@@ -17,36 +17,23 @@
 package io.fabric8.mockwebserver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fabric8.mockwebserver.internal.DefaultWebSocketReader;
-import io.fabric8.mockwebserver.internal.DefaultWebSocketWriter;
 import io.sundr.builder.annotations.Buildable;
 
 public class Context {
 
     private final ObjectMapper mapper;
-    private final WebSocketReader reader;
-    private final WebSocketWriter writer;
 
     public Context() {
-        this(new ObjectMapper(), new DefaultWebSocketReader(), new DefaultWebSocketWriter());
+        this(new ObjectMapper());
     }
 
     @Buildable(builderPackage = "io.fabric8.mockwebserver.builder", generateBuilderPackage = true)
-    public Context(ObjectMapper mapper, WebSocketReader reader, WebSocketWriter writer) {
+    public Context(ObjectMapper mapper) {
         this.mapper = mapper;
-        this.reader = reader;
-        this.writer = writer;
     }
 
     public ObjectMapper getMapper() {
         return mapper;
     }
 
-    public WebSocketReader getReader() {
-        return reader;
-    }
-
-    public WebSocketWriter getWriter() {
-        return writer;
-    }
 }
