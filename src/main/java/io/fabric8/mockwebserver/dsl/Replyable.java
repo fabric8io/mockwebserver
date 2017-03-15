@@ -16,5 +16,19 @@
 
 package io.fabric8.mockwebserver.dsl;
 
-public interface ReturnOrWebsocketable<T> extends Returnable<T>, WebSocketable<WebSocketSessionBuilder<T>>, Replyable<T> {
+import java.util.List;
+
+import io.fabric8.mockwebserver.utils.BodyProvider;
+import io.fabric8.mockwebserver.utils.ResponseProvider;
+
+public interface Replyable<T> {
+
+  T andReply(int statusCode, BodyProvider<Object> contentSupplier);
+
+  T andReply(ResponseProvider<Object> contentSupplier);
+
+  T andReplyChunked(int statusCode, BodyProvider<List<Object>> content);
+
+  T andReplyChunked(ResponseProvider<List<Object>> content);
+
 }

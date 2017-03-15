@@ -16,46 +16,56 @@
 
 package io.fabric8.mockwebserver.internal;
 
-import io.fabric8.mockwebserver.ServerResponse;
-import okhttp3.mockwebserver.MockResponse;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import io.fabric8.mockwebserver.ServerResponse;
+import io.fabric8.mockwebserver.utils.ResponseProvider;
+import io.fabric8.mockwebserver.utils.ResponseProviders;
+
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.RecordedRequest;
 
 public class ChunkedResponse implements ServerResponse {
 
     private static final int DEFAULT_MAX_CHUNK_SIZE = 204800;
-    private final int statusCode;
-    private final List<String> body;
+    private final ResponseProvider<List<String>> bodyProvider;
     private final boolean repeatable;
     private final long responseDelay;
     private final TimeUnit responseDelayUnit;
 
     public ChunkedResponse(boolean repeatable, int statusCode, String... body) {
-        this(repeatable, statusCode, 0, TimeUnit.MILLISECONDS, body);
+        this(repeatable, ResponseProviders.ofAll(statusCode, body));
+    }
+
+    public ChunkedResponse(boolean repeatable, ResponseProvider<List<String>> bodyProvider) {
+        this(repeatable, 0, TimeUnit.MILLISECONDS, bodyProvider);
     }
 
     public ChunkedResponse(boolean repeatable, int statusCode, long responseDelay, TimeUnit responseDelayUnit, String... body) {
-        this.statusCode = statusCode;
-        this.body = Arrays.asList(body);
+        this(repeatable, responseDelay, responseDelayUnit, ResponseProviders.ofAll(statusCode, body));
+    }
+
+    public ChunkedResponse(boolean repeatable, long responseDelay, TimeUnit responseDelayUnit, ResponseProvider<List<String>> bodyProvider) {
+        this.bodyProvider = bodyProvider;
         this.repeatable = repeatable;
         this.responseDelay = responseDelay;
         this.responseDelayUnit = responseDelayUnit;
     }
 
-    public int getStatusCode() {
-        return statusCode;
+    public ResponseProvider<List<String>> getBodyProvider() {
+        return bodyProvider;
     }
 
-    public List<String> getBody() {
-        return body;
-    }
-
+    @Deprecated
     public MockResponse toMockResponse() {
+        return toMockResponse(null);
+    }
+
+    public MockResponse toMockResponse(RecordedRequest request) {
         MockResponse mockResponse = new MockResponse();
-        mockResponse.setChunkedBody(concatBody(), DEFAULT_MAX_CHUNK_SIZE);
-        mockResponse.setResponseCode(statusCode);
+        mockResponse.setChunkedBody(concatBody(request), DEFAULT_MAX_CHUNK_SIZE);
+        mockResponse.setResponseCode(bodyProvider.getStatusCode());
 
         if (responseDelay > 0) {
             mockResponse.setBodyDelay(responseDelay, responseDelayUnit);
@@ -64,9 +74,9 @@ public class ChunkedResponse implements ServerResponse {
         return mockResponse;
     }
 
-    private String concatBody() {
+    private String concatBody(RecordedRequest request) {
         StringBuilder sb = new StringBuilder();
-        for (String s : body) {
+        for (String s : bodyProvider.getBody(request)) {
             sb.append(s);
         }
         return sb.toString();

@@ -17,10 +17,14 @@
 package io.fabric8.mockwebserver;
 
 import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.RecordedRequest;
 
 public interface ServerResponse {
 
     boolean isRepeatable();
 
+    @Deprecated
     MockResponse toMockResponse();
+
+    MockResponse toMockResponse(RecordedRequest recordedRequest);
 }

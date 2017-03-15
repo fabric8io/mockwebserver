@@ -43,21 +43,21 @@ public class MockDispatcher extends Dispatcher {
         SimpleRequest keyForAnyMethod = new SimpleRequest(path);
         if (responses.containsKey(key)) {
             Queue<ServerResponse> queue = responses.get(key);
-            return handleResponse(queue.peek(), queue);
+            return handleResponse(queue.peek(), queue, request);
         } else if (responses.containsKey(keyForAnyMethod)) {
             Queue<ServerResponse> queue = responses.get(keyForAnyMethod);
-            return handleResponse(queue.peek(), queue);
+            return handleResponse(queue.peek(), queue, request);
         }
         return new MockResponse().setResponseCode(404);
     }
 
-    private MockResponse handleResponse(ServerResponse response, Queue<ServerResponse> queue) {
+    private MockResponse handleResponse(ServerResponse response, Queue<ServerResponse> queue, RecordedRequest request) {
         if (response == null) {
             return new MockResponse().setResponseCode(404);
         } else if (!response.isRepeatable()) {
             queue.remove();
         }
-        return response.toMockResponse();
+        return response.toMockResponse(request);
     }
 
 }
