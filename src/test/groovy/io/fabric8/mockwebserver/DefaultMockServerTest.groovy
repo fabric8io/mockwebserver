@@ -16,7 +16,9 @@
 
 package io.fabric8.mockwebserver
 
+import io.fabric8.mockwebserver.utils.ResponseProvider
 import okhttp3.*
+import okhttp3.mockwebserver.RecordedRequest
 import okio.ByteString
 import spock.lang.Shared
 import spock.lang.Specification
@@ -53,9 +55,9 @@ class DefaultMockServerTest extends Specification {
 
         then:
         try {
-            response1.code() == 200
-            response1.body().string() == "admin"
-            response2.code() == 404
+            assert response1.code() == 200
+            assert response1.body().string() == "admin"
+            assert response2.code() == 404
         } finally {
             response1.close()
             response2.close()
@@ -75,13 +77,13 @@ class DefaultMockServerTest extends Specification {
 
         then:
         try {
-            response1.code() == 200
-            response1.body().string() == "admin"
-            response2.code() == 200
-            response2.body().string() == "admin"
-            response3.code() == 200
-            response3.body().string() == "admin"
-            response4.code() == 404
+            assert response1.code() == 200
+            assert response1.body().string() == "admin"
+            assert response2.code() == 200
+            assert response2.body().string() == "admin"
+            assert response3.code() == 200
+            assert response3.body().string() == "admin"
+            assert response4.code() == 404
         } finally {
             response1.close()
             response2.close()
@@ -103,14 +105,14 @@ class DefaultMockServerTest extends Specification {
 
         then:
         try {
-            response1.code() == 200
-            response1.body().string() == "admin"
-            response2.code() == 200
-            response2.body().string() == "admin"
-            response3.code() == 200
-            response3.body().string() == "admin"
-            response4.code() == 200
-            response4.body().string() == "admin"
+            assert response1.code() == 200
+            assert response1.body().string() == "admin"
+            assert response2.code() == 200
+            assert response2.body().string() == "admin"
+            assert response3.code() == 200
+            assert response3.body().string() == "admin"
+            assert response4.code() == 200
+            assert response4.body().string() == "admin"
         } finally {
             response1.close()
             response2.close()
@@ -131,8 +133,8 @@ class DefaultMockServerTest extends Specification {
 
         then:
         try {
-            response1.code() == 200
-            response1.body().string() == "{\"id\":0,\"username\":\"root\",\"enabled\":true}"
+            assert response1.code() == 200
+            assert response1.body().string() == "{\"id\":0,\"username\":\"root\",\"enabled\":true}"
         } finally {
             response1.close()
         }
@@ -260,11 +262,63 @@ class DefaultMockServerTest extends Specification {
 
         then:
         try {
-            response1.code() == 200
-            response1.body().string() == "admin"
-            System.currentTimeMillis() - startTime >= 100
+            assert response1.code() == 200
+            assert response1.body().string() == "admin"
+            assert System.currentTimeMillis() - startTime >= 100
         } finally {
             response1.close()
+        }
+    }
+
+    def "when using a body provider it should work as for static responses"() {
+        given:
+        int[] counter = [0]
+        server.expect().get().withPath("/api/v1/users").andReply(200, {req -> "admin" + (counter[0]++)}).always()
+
+        when:
+        Request request = new Request.Builder().url(server.url("/api/v1/users")).get().build()
+        Response response1 = client.newCall(request).execute()
+        Response response2 = client.newCall(request).execute()
+
+        then:
+        try {
+            assert response1.code() == 200
+            assert response1.body().string() == "admin0"
+            assert response2.code() == 200
+            assert response2.body().string() == "admin1"
+        } finally {
+            response1.close()
+            response2.close()
+        }
+    }
+
+    def "when using a response provider it should work as for static responses"() {
+        given:
+        int[] counter = [0, 0]
+        server.expect().get().withPath("/api/v1/users").andReply(new ResponseProvider<Object>() {
+            int getStatusCode() {
+                return 200 + (counter[0]++)
+            }
+
+            Object getBody(RecordedRequest request) {
+                return "admin" + (counter[1]++)
+            }
+        }).always()
+
+        when:
+        Request request = new Request.Builder().url(server.url("/api/v1/users")).get().build()
+        Response response1 = client.newCall(request).execute()
+        Response response2 = client.newCall(request).execute()
+
+        then:
+        try {
+            assert response1.code() == 200
+            assert response1.body().string() == "admin0"
+            assert response2.code() == 201
+            assert response2.body().string() == "admin1"
+        } finally {
+            response1.close()
+            response2.close()
         }
     }
 }

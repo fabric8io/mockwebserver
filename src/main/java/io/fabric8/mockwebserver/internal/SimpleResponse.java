@@ -16,15 +16,18 @@
 
 package io.fabric8.mockwebserver.internal;
 
-import okhttp3.mockwebserver.MockResponse;
-import io.fabric8.mockwebserver.ServerResponse;
-
 import java.util.concurrent.TimeUnit;
+
+import io.fabric8.mockwebserver.ServerResponse;
+import io.fabric8.mockwebserver.utils.ResponseProvider;
+import io.fabric8.mockwebserver.utils.ResponseProviders;
+
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.RecordedRequest;
 
 public class SimpleResponse implements ServerResponse {
 
-  private final int statusCode;
-  private final String body;
+  private final ResponseProvider<String> bodyProvider;
 
   private final WebSocketSession webSocketSession;
   private final boolean repeatable;
@@ -32,33 +35,41 @@ public class SimpleResponse implements ServerResponse {
   private final TimeUnit responseDelayUnit;
 
   public SimpleResponse(boolean repeatable, int statusCode, String body, WebSocketSession webSocketSession) {
-    this(repeatable, statusCode, body, webSocketSession, 0, TimeUnit.MILLISECONDS);
+    this(repeatable, ResponseProviders.of(statusCode, body), webSocketSession);
+  }
+
+  public SimpleResponse(boolean repeatable, ResponseProvider<String> bodyProvider, WebSocketSession webSocketSession) {
+    this(repeatable, bodyProvider, webSocketSession, 0, TimeUnit.MILLISECONDS);
   }
 
   public SimpleResponse(boolean repeatable, int statusCode, String body, WebSocketSession webSocketSession, long responseDelay, TimeUnit responseDelayUnit) {
-    this.statusCode = statusCode;
-    this.body = body;
+    this(repeatable, ResponseProviders.of(statusCode, body), webSocketSession, responseDelay, responseDelayUnit);
+  }
+
+  public SimpleResponse(boolean repeatable, ResponseProvider<String> bodyProvider, WebSocketSession webSocketSession, long responseDelay, TimeUnit responseDelayUnit) {
+    this.bodyProvider = bodyProvider;
     this.webSocketSession = webSocketSession;
     this.repeatable = repeatable;
     this.responseDelay = responseDelay;
     this.responseDelayUnit = responseDelayUnit;
   }
 
-  public int getStatusCode() {
-    return statusCode;
+  public ResponseProvider<String> getBodyProvider() {
+    return bodyProvider;
   }
 
-  public String getBody() {
-    return body;
-  }
-
+  @Deprecated
   public MockResponse toMockResponse() {
+    return toMockResponse(null);
+  }
+
+  public MockResponse toMockResponse(RecordedRequest request) {
     MockResponse mockResponse = new MockResponse();
     if (webSocketSession != null) {
       mockResponse.withWebSocketUpgrade(webSocketSession);
     } else {
-      mockResponse.setBody(body);
-      mockResponse.setResponseCode(statusCode);
+      mockResponse.setBody(bodyProvider.getBody(request));
+      mockResponse.setResponseCode(bodyProvider.getStatusCode());
     }
 
     if (responseDelay > 0) {
@@ -83,19 +94,18 @@ public class SimpleResponse implements ServerResponse {
 
     SimpleResponse that = (SimpleResponse) o;
 
-    if (statusCode != that.statusCode) return false;
     if (repeatable != that.repeatable) return false;
-    if (body != null ? !body.equals(that.body) : that.body != null) return false;
+    if (bodyProvider != null ? !bodyProvider.equals(that.bodyProvider) : that.bodyProvider != null) return false;
     return webSocketSession != null ? webSocketSession.equals(that.webSocketSession) : that.webSocketSession == null;
 
   }
 
   @Override
   public int hashCode() {
-    int result = statusCode;
-    result = 31 * result + (body != null ? body.hashCode() : 0);
+    int result = bodyProvider != null ? bodyProvider.hashCode() : 0;
     result = 31 * result + (webSocketSession != null ? webSocketSession.hashCode() : 0);
     result = 31 * result + (repeatable ? 1 : 0);
     return result;
   }
+
 }
