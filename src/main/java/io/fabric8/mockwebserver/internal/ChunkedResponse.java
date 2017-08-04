@@ -23,6 +23,7 @@ import io.fabric8.mockwebserver.ServerResponse;
 import io.fabric8.mockwebserver.utils.ResponseProvider;
 import io.fabric8.mockwebserver.utils.ResponseProviders;
 
+import okhttp3.Headers;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
@@ -64,6 +65,7 @@ public class ChunkedResponse implements ServerResponse {
 
     public MockResponse toMockResponse(RecordedRequest request) {
         MockResponse mockResponse = new MockResponse();
+        mockResponse.setHeaders(bodyProvider.getHeaders());
         mockResponse.setChunkedBody(concatBody(request), DEFAULT_MAX_CHUNK_SIZE);
         mockResponse.setResponseCode(bodyProvider.getStatusCode());
 

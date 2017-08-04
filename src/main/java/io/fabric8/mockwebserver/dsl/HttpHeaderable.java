@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.fabric8.mockwebserver.dsl;
 
-public interface MockServerExpectation extends HttpMethodable<DelayPathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>>>,
-        DelayPathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>>,
-        ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>,
-        TimesOnceableOrHttpHeaderable<Void> {
+public interface HttpHeaderable<T> {
+
+  T withHeader(String header);
+
+  T withHeader(String name, String value);
 
 }

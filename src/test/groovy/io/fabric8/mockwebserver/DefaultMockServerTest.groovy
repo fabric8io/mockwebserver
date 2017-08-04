@@ -296,12 +296,24 @@ class DefaultMockServerTest extends Specification {
         given:
         int[] counter = [0, 0]
         server.expect().get().withPath("/api/v1/users").andReply(new ResponseProvider<Object>() {
+            private Headers headers = new Headers.Builder().build()
+
             int getStatusCode() {
                 return 200 + (counter[0]++)
             }
 
             Object getBody(RecordedRequest request) {
                 return "admin" + (counter[1]++)
+            }
+
+            @Override
+            Headers getHeaders() {
+                return headers;
+            }
+
+            @Override
+            void setHeaders(Headers headers) {
+                this.headers = headers;
             }
         }).always()
 
@@ -319,6 +331,25 @@ class DefaultMockServerTest extends Specification {
         } finally {
             response1.close()
             response2.close()
+        }
+    }
+
+    def "should be able to set headers on responses"() {
+        given:
+        server.expect().get().withPath("/api/v1/users").andReturn(200, "admin").withHeader("test: header").withHeader("test2", "header2").once()
+
+        when:
+        Request request = new Request.Builder().url(server.url("/api/v1/users")).get().build()
+        Response response = client.newCall(request).execute()
+
+        then:
+        try {
+            assert response.code() == 200
+            assert response.body().string() == "admin"
+            assert response.header("test") == "header"
+            assert response.header("test2") == "header2"
+        } finally {
+            response.close()
         }
     }
 }

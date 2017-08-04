@@ -22,6 +22,7 @@ import io.fabric8.mockwebserver.ServerResponse;
 import io.fabric8.mockwebserver.utils.ResponseProvider;
 import io.fabric8.mockwebserver.utils.ResponseProviders;
 
+import okhttp3.Headers;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
@@ -68,6 +69,7 @@ public class SimpleResponse implements ServerResponse {
     if (webSocketSession != null) {
       mockResponse.withWebSocketUpgrade(webSocketSession);
     } else {
+      mockResponse.setHeaders(bodyProvider.getHeaders());
       mockResponse.setBody(bodyProvider.getBody(request));
       mockResponse.setResponseCode(bodyProvider.getStatusCode());
     }
