@@ -15,10 +15,11 @@
  */
 package io.fabric8.mockwebserver.utils;
 
+import okhttp3.Headers;
+import okhttp3.mockwebserver.RecordedRequest;
+
 import java.util.Arrays;
 import java.util.List;
-
-import okhttp3.mockwebserver.RecordedRequest;
 
 /**
  * Useful methods for creating basic response providers.
@@ -43,6 +44,8 @@ public class ResponseProviders {
     public static <R> ResponseProvider<R> of(final int statusCode, final BodyProvider<R> bodyProvider) {
         if (bodyProvider != null) {
             return new ResponseProvider<R>() {
+                private Headers headers = new Headers.Builder().build();
+
                 @Override
                 public int getStatusCode() {
                     return statusCode;
@@ -51,6 +54,16 @@ public class ResponseProviders {
                 @Override
                 public R getBody(RecordedRequest request) {
                     return bodyProvider.getBody(request);
+                }
+
+                @Override
+                public Headers getHeaders() {
+                    return headers;
+                }
+
+                @Override
+                public void setHeaders(Headers headers) {
+                    this.headers = headers;
                 }
             };
         }
@@ -62,6 +75,8 @@ public class ResponseProviders {
         private int statusCode;
 
         private T element;
+
+        private Headers headers = new Headers.Builder().build();
 
         public FixedResponseProvider(int statusCode, T element) {
             this.statusCode = statusCode;
@@ -76,6 +91,16 @@ public class ResponseProviders {
         @Override
         public int getStatusCode() {
             return statusCode;
+        }
+
+        @Override
+        public Headers getHeaders() {
+            return headers;
+        }
+
+        @Override
+        public void setHeaders(Headers headers) {
+            this.headers = headers;
         }
 
         @Override

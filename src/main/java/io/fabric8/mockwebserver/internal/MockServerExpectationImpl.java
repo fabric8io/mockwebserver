@@ -32,6 +32,7 @@ import io.fabric8.mockwebserver.dsl.HttpMethod;
 import io.fabric8.mockwebserver.dsl.MockServerExpectation;
 import io.fabric8.mockwebserver.dsl.Pathable;
 import io.fabric8.mockwebserver.dsl.ReturnOrWebsocketable;
+import io.fabric8.mockwebserver.dsl.TimesOnceableOrHttpHeaderable;
 import io.fabric8.mockwebserver.dsl.TimesOrOnceable;
 import io.fabric8.mockwebserver.dsl.WebSocketSessionBuilder;
 import io.fabric8.mockwebserver.utils.BodyProvider;
@@ -40,6 +41,7 @@ import io.fabric8.mockwebserver.utils.ResponseProviders;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import okhttp3.Headers;
 import okhttp3.mockwebserver.RecordedRequest;
 
 public class MockServerExpectationImpl implements MockServerExpectation {
@@ -76,73 +78,73 @@ public class MockServerExpectationImpl implements MockServerExpectation {
   }
 
   @Override
-  public DelayPathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> any() {
+  public DelayPathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>> any() {
     return new MockServerExpectationImpl(context, HttpMethod.ANY, path, bodyProvider, chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public DelayPathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> post() {
+  public DelayPathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>> post() {
     return new MockServerExpectationImpl(context, HttpMethod.POST, path, bodyProvider, chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public DelayPathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> get() {
+  public DelayPathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>> get() {
     return new MockServerExpectationImpl(context, HttpMethod.GET, path, bodyProvider, chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public DelayPathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> put() {
+  public DelayPathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>> put() {
     return new MockServerExpectationImpl(context, HttpMethod.PUT, path, bodyProvider, chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public DelayPathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> delete() {
+  public DelayPathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>> delete() {
     return new MockServerExpectationImpl(context, HttpMethod.DELETE, path, bodyProvider, chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public DelayPathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> patch() {
+  public DelayPathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>> patch() {
     return new MockServerExpectationImpl(context, HttpMethod.PATCH, path, bodyProvider, chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public ReturnOrWebsocketable<TimesOrOnceable<Void>> withPath(String path) {
+  public ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>> withPath(String path) {
     return new MockServerExpectationImpl(context, method, path, bodyProvider, chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public TimesOrOnceable<Void> andReturn(int statusCode, Object content) {
+  public TimesOnceableOrHttpHeaderable<Void> andReturn(int statusCode, Object content) {
     return new MockServerExpectationImpl(context, method, path, ResponseProviders.of(statusCode, toString(content)), chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public TimesOrOnceable<Void> andReply(int statusCode, BodyProvider<Object> content) {
+  public TimesOnceableOrHttpHeaderable<Void> andReply(int statusCode, BodyProvider<Object> content) {
     return andReply(ResponseProviders.of(statusCode, content));
   }
 
   @Override
-  public TimesOrOnceable<Void> andReply(ResponseProvider<Object> content) {
+  public TimesOnceableOrHttpHeaderable<Void> andReply(ResponseProvider<Object> content) {
     return new MockServerExpectationImpl(context, method, path, toString(content), chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
   @Deprecated
-  public TimesOrOnceable<Void> andReturnChucked(int statusCode, Object... contents) {
+  public TimesOnceableOrHttpHeaderable<Void> andReturnChucked(int statusCode, Object... contents) {
     return andReturnChunked(statusCode, contents);
   }
 
   @Override
-  public TimesOrOnceable<Void> andReturnChunked(int statusCode, Object... contents) {
+  public TimesOnceableOrHttpHeaderable<Void> andReturnChunked(int statusCode, Object... contents) {
     return new MockServerExpectationImpl(context, method, path, bodyProvider, ResponseProviders.of(statusCode, toString(contents)), delay, delayUnit, times, responses);
   }
 
   @Override
-  public TimesOrOnceable<Void> andReplyChunked(int statusCode, BodyProvider<List<Object>> contents) {
+  public TimesOnceableOrHttpHeaderable<Void> andReplyChunked(int statusCode, BodyProvider<List<Object>> contents) {
     return andReplyChunked(ResponseProviders.of(statusCode, contents));
   }
 
   @Override
-  public TimesOrOnceable<Void> andReplyChunked(ResponseProvider<List<Object>> contents) {
+  public TimesOnceableOrHttpHeaderable<Void> andReplyChunked(ResponseProvider<List<Object>> contents) {
     return new MockServerExpectationImpl(context, method, path, bodyProvider, listToString(contents), delay, delayUnit, times, responses);
   }
 
@@ -167,21 +169,21 @@ public class MockServerExpectationImpl implements MockServerExpectation {
   }
 
   @Override
-  public Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> delay(long delay, TimeUnit delayUnit) {
+  public Pathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>> delay(long delay, TimeUnit delayUnit) {
     return new MockServerExpectationImpl(context, method, path, bodyProvider, chunksProvider, delay, delayUnit, times, responses);
   }
 
   @Override
-  public Pathable<ReturnOrWebsocketable<TimesOrOnceable<Void>>> delay(long delayInMilliseconds) {
+  public Pathable<ReturnOrWebsocketable<TimesOnceableOrHttpHeaderable<Void>>> delay(long delayInMilliseconds) {
     return new MockServerExpectationImpl(context, method, path, bodyProvider, chunksProvider, delayInMilliseconds, TimeUnit.MILLISECONDS, times, responses);
   }
 
   @Override
-  public WebSocketSessionBuilder<TimesOrOnceable<Void>> andUpgradeToWebSocket() {
-    return new InlineWebSocketSessionBuilder<>(context, new Function<WebSocketSession, TimesOrOnceable<Void>>() {
+  public WebSocketSessionBuilder<TimesOnceableOrHttpHeaderable<Void>> andUpgradeToWebSocket() {
+    return new InlineWebSocketSessionBuilder<>(context, new Function<WebSocketSession, TimesOnceableOrHttpHeaderable<Void>>() {
       @Override
-      public TimesOrOnceable<Void> apply(final WebSocketSession webSocketSession) {
-        return new TimesOrOnceable<Void>() {
+      public TimesOnceableOrHttpHeaderable<Void> apply(final WebSocketSession webSocketSession) {
+        return new TimesOnceableOrHttpHeaderable<Void>() {
 
           @Override
           public Void always() {
@@ -202,9 +204,31 @@ public class MockServerExpectationImpl implements MockServerExpectation {
             }
             return null;//Void
           }
+
+          @Override
+          public TimesOnceableOrHttpHeaderable<Void> withHeader(String header) {
+            return null;//Void
+          }
+
+          @Override
+          public TimesOnceableOrHttpHeaderable<Void> withHeader(String name, String value) {
+            return null;//Void
+          }
         };
       }
     });
+  }
+
+  @Override
+  public TimesOnceableOrHttpHeaderable<Void> withHeader(String header) {
+    bodyProvider.setHeaders(bodyProvider.getHeaders().newBuilder().add(header).build());
+    return new MockServerExpectationImpl(context, method, path, bodyProvider, chunksProvider, delay, TimeUnit.MILLISECONDS, times, responses);
+  }
+
+  @Override
+  public TimesOnceableOrHttpHeaderable<Void> withHeader(String name, String value) {
+    bodyProvider.setHeaders(bodyProvider.getHeaders().newBuilder().add(name, value).build());
+    return new MockServerExpectationImpl(context, method, path, bodyProvider, chunksProvider, delay, TimeUnit.MILLISECONDS, times, responses);
   }
 
 
@@ -237,6 +261,16 @@ public class MockServerExpectationImpl implements MockServerExpectation {
       public int getStatusCode() {
         return provider.getStatusCode();
       }
+
+      @Override
+      public Headers getHeaders() {
+        return provider.getHeaders();
+      }
+
+      @Override
+      public void setHeaders(Headers headers) {
+        provider.setHeaders(headers);
+      }
     };
   }
 
@@ -255,6 +289,16 @@ public class MockServerExpectationImpl implements MockServerExpectation {
       @Override
       public int getStatusCode() {
         return provider.getStatusCode();
+      }
+
+      @Override
+      public Headers getHeaders() {
+        return provider.getHeaders();
+      }
+
+      @Override
+      public void setHeaders(Headers headers) {
+        provider.setHeaders(headers);
       }
     };
   }
