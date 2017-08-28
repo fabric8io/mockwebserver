@@ -92,7 +92,7 @@ public class WebSocketSession extends WebSocketListener {
             }
             checkIfShouldClose();
         } else {
-            webSocketRef.get().close(0, "Unexpected message:" + in);
+            webSocketRef.get().close(1002, "Unexpected message:" + in);
         }
     }
 
