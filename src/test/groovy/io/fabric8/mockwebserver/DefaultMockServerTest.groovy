@@ -251,6 +251,66 @@ class DefaultMockServerTest extends Specification {
         closed.await(10, TimeUnit.SECONDS)
     }
 
+    def "when receiving an unexpected websocket message it should close the connection with status code 1002"() {
+        given:
+        CountDownLatch opened = new CountDownLatch(1)
+        CountDownLatch closed = new CountDownLatch(1)
+        int closeCode = -1
+        String closeReason = null
+        AtomicReference<WebSocket> webSocketRef = new AtomicReference<>()
+
+        WebSocketListener listener = new WebSocketListener() {
+            @Override
+            void onOpen(WebSocket webSocket, Response response) {
+                webSocketRef.set(webSocket)
+                opened.countDown()
+            }
+
+            @Override
+            void onMessage(WebSocket webSocket, String text) {
+                System.out.println(text)
+            }
+
+            @Override
+            void onMessage(WebSocket webSocket, ByteString bytes) {
+                onMessage(webSocket, bytes.utf8())
+            }
+
+            @Override
+            void onClosing(WebSocket webSocket, int code, String reason) {
+                System.out.println("Closing: " + code + " : " + reason)
+                webSocket.close(code, reason)
+            }
+
+            @Override
+            void onClosed(WebSocket webSocket, int code, String reason) {
+                closeCode = code
+                closeReason = reason
+                closed.countDown()
+            }
+        }
+
+        server.expect().get().withPath("/api/v1/users/watch")
+                .andUpgradeToWebSocket()
+                .open()
+                    .expect("expected message").andEmit("MESSAGE OK").once()
+                .done()
+                .once()
+
+        when:
+        Request request = new Request.Builder().url(server.url("/api/v1/users/watch")).get().build()
+        webSocketRef.set(client.newWebSocket(request, listener))
+
+        then:
+        opened.await(10, TimeUnit.SECONDS)
+        WebSocket ws = webSocketRef.get()
+        ws.send("unexpected message")
+        closed.await(10, TimeUnit.SECONDS)
+        assert closeCode == 1002
+        assert closeReason == "Unexpected message:unexpected message"
+
+    }
+
     def "when setting a delayed response it should be delayed for the specified duration"() {
         given:
         server.expect().get().withPath("/api/v1/users").delay(100, TimeUnit.MILLISECONDS).andReturn(200, "admin").once()
