@@ -11,6 +11,7 @@ This is a DSL wrapper around the ``okhttp`` [mockwebserver](https://github.com/s
 - Supports WebSockets
 - Supports String or Object bodies (which are serialized to JSON or YAML).
 - Supports SSL
+- CRUD mocking
 
 ### Creating a Mock Web Server
 
@@ -105,6 +106,31 @@ To support mock of web sockets this wrapper allows you to either specify a ``req
                     .waitFor(1500).andEmit("root - DELETED")
                 .done()
                 .once()
+
+### CRUD Mocking ###
+
+Often a rest API, will act like a CRUD (create, read, update & delete). So, it makes sense to have a different approach on setting expectations. 
+Instead of setting expectations for every single request, to take advantage of the crud nature of the API. This means that a get operation will return the resource, that has been previously created.
+In the same spirit a delete or update request, will act on a previously created resource and so on.
+
+To use CRUD mocking, the user will have to implement two interfaces:
+
+- An AttributeExtractor
+- A ResponseComposer
+
+The AttributeExtractor extracts attributes, from the path of the request and from the actual resource. Attributes is what is used to match paths to resources.
+In order to have a successful match, the path attributes need to be a subset of the actual resource attributes:
+The actual methods that need to be implemented are:
+
+    AttributeSet extract(String path);
+    AttributeSet extract(T object);
+
+
+Each get request, may result in one or more resources (based on the attributes, as explained above). To compose multiple resources into a single response, the ResponseComposer comes into play.
+The ResponseComposer is a simple object that specifies how multiple Strings can be composed into a single one:
+
+    String compose(Collection<String> items);
+
 
 #### More Examples ####
 

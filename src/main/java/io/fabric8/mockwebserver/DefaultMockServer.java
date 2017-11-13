@@ -20,6 +20,7 @@ import io.fabric8.mockwebserver.dsl.MockServerExpectation;
 import io.fabric8.mockwebserver.internal.MockDispatcher;
 import io.fabric8.mockwebserver.internal.MockSSLContextFactory;
 import io.fabric8.mockwebserver.internal.MockServerExpectationImpl;
+import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 
@@ -60,6 +61,14 @@ public class DefaultMockServer {
     this.server = server;
     this.responses = responses;
     this.server.setDispatcher(new MockDispatcher(responses));
+  }
+
+  public DefaultMockServer(Context context, MockWebServer server, Map<ServerRequest, Queue<ServerResponse>> responses, Dispatcher dispatcher, boolean useHttps) {
+    this.context = context;
+    this.useHttps = useHttps;
+    this.server = server;
+    this.responses = responses;
+    this.server.setDispatcher(dispatcher);
   }
 
   /**
