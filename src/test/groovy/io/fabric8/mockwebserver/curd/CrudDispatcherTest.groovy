@@ -33,7 +33,7 @@ class CrudDispatcherTest extends Specification {
     AttributeExtractor extractor = new AttributeExtractor() {
 
         @Override
-        AttributeSet extract(String path) {
+        AttributeSet fromPath(String path) {
             AttributeSet set = new AttributeSet()
 
             String[] parts = path.split("/")
@@ -48,8 +48,18 @@ class CrudDispatcherTest extends Specification {
         }
 
         @Override
-        AttributeSet extract(Object object) {
+        AttributeSet fromResource(String resource) {
             return null
+        }
+
+        @Override
+        AttributeSet extract(String path) {
+            return fromPath(path)
+        }
+
+        @Override
+        AttributeSet extract(Object object) {
+            return fromResource(object)
         }
     }
 
