@@ -16,10 +16,10 @@ public class CrudDispatcher extends Dispatcher {
     private static final String GET = "get";
     private static final String DELETE = "delete";
 
-    private Map<AttributeSet, String> map = new HashMap<>();
+    protected Map<AttributeSet, String> map = new HashMap<>();
 
-    private final AttributeExtractor attributeExtractor;
-    private final ResponseComposer responseComposer;
+    protected final AttributeExtractor attributeExtractor;
+    protected final ResponseComposer responseComposer;
 
     public CrudDispatcher(AttributeExtractor attributeExtractor, ResponseComposer responseComposer) {
         this.attributeExtractor = attributeExtractor;
@@ -53,7 +53,7 @@ public class CrudDispatcher extends Dispatcher {
      */
     public MockResponse handlePost(String path, String s) {
         MockResponse response = new MockResponse();
-        AttributeSet features = AttributeSet.merge(attributeExtractor.extract(path), attributeExtractor.extract(s));
+        AttributeSet features = AttributeSet.merge(attributeExtractor.fromPath(path), attributeExtractor.fromResource(s));
         map.put(features, s);
         response.setBody(s);
         response.setResponseCode(202);
@@ -86,6 +86,7 @@ public class CrudDispatcher extends Dispatcher {
                 items.add(entry.getValue());
             }
         }
+
         if (!items.isEmpty()) {
             response.setBody(responseComposer.compose(items));
             response.setResponseCode(200);
@@ -120,5 +121,17 @@ public class CrudDispatcher extends Dispatcher {
             response.setResponseCode(404);
         }
         return response;
+    }
+
+    public Map<AttributeSet, String> getMap() {
+        return map;
+    }
+
+    public AttributeExtractor getAttributeExtractor() {
+        return attributeExtractor;
+    }
+
+    public ResponseComposer getResponseComposer() {
+        return responseComposer;
     }
 }

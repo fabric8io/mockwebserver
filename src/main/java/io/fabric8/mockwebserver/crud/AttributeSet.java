@@ -2,18 +2,33 @@ package io.fabric8.mockwebserver.crud;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class AttributeSet {
 
-    private final Set<Attribute> attributes;
-
+    private final Map<Key, Attribute> attributes;
 
     public static AttributeSet merge(AttributeSet... attributeSets) {
-        Set<Attribute> all = new LinkedHashSet<>();
-        for (AttributeSet f : attributeSets) {
-            all.addAll(f.attributes);
+        Map<Key, Attribute> all = new HashMap<>();
+        if (attributeSets != null) {
+            for (AttributeSet f : attributeSets) {
+                if (f != null && f.attributes != null) {
+                    all.putAll(f.attributes);
+                }
+            }
+        }
+        return new AttributeSet(all);
+    }
+
+    public static AttributeSet map(Attribute... attributes) {
+        Map<Key, Attribute> all = new HashMap<>();
+        if (attributes != null) {
+            for (Attribute a : attributes) {
+                all.put(a.getKey(), a);
+            }
         }
         return new AttributeSet(all);
     }
@@ -23,21 +38,33 @@ public class AttributeSet {
     }
 
     public AttributeSet(Collection<Attribute> attributes) {
-        this.attributes = attributes == null ? new LinkedHashSet<Attribute>() : new LinkedHashSet<>(attributes);
+        this(AttributeSet.map(attributes.toArray(new Attribute[attributes.size()])).attributes);
+    }
+
+    public AttributeSet(Map<Key, Attribute> attributes) {
+        this.attributes = attributes;
     }
 
     public AttributeSet add(Attribute... attr) {
-        Set<Attribute> all = new LinkedHashSet<>(attributes);
+        Map<Key, Attribute> all = new HashMap(attributes);
         for(Attribute a : attr) {
-            all.add(a);
+            all.put(a.getKey(), a);
         }
         return new AttributeSet(all);
     }
 
+    public boolean containsKey(String key) {
+        return containsKey(new Key(key));
+    }
+
+    public boolean containsKey(Key key) {
+        return attributes.containsKey(key);
+    }
+
     public boolean matches(AttributeSet candidate) {
-        for (Attribute c : candidate.attributes) {
+        for (Attribute c : candidate.attributes.values()) {
             boolean found = false;
-            for (Attribute a : attributes) {
+            for (Attribute a : attributes.values()) {
                 if (c.equals(a)) {
                     found = true;
                 }
@@ -63,5 +90,12 @@ public class AttributeSet {
     @Override
     public int hashCode() {
         return attributes != null ? attributes.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "attributes: " + attributes  +
+                '}';
     }
 }
