@@ -80,6 +80,7 @@
         <okhttp.version>3.9.0</okhttp.version>
         <jackson.version>2.7.0</jackson.version>
         <sundrio.version>0.2.7</sundrio.version>
+        <zjsonpatch.version>0.3.0</zjsonpatch.version>
 
         <!-- For Testing -->
         <groovy.version>2.4.4</groovy.version>
@@ -105,6 +106,12 @@
             <groupId>io.sundr</groupId>
             <artifactId>builder-annotations</artifactId>
             <version>${sundrio.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>zjsonpatch</artifactId>
+            <version>${zjsonpatch.version}</version>
         </dependency>
 
         <dependency>

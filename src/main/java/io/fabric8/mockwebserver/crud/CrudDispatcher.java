@@ -1,5 +1,8 @@
 package io.fabric8.mockwebserver.crud;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.fabric8.mockwebserver.Context;
+import io.fabric8.zjsonpatch.JsonPatch;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -11,17 +14,20 @@ import java.util.Map;
 
 public class CrudDispatcher extends Dispatcher {
 
-    private static final String POST = "post";
-    private static final String UPDATE = "update";
-    private static final String GET = "get";
-    private static final String DELETE = "delete";
+    private static final String POST = "POST";
+    private static final String PUT = "PUT";
+    private static final String PATCH = "PATCH";
+    private static final String GET = "GET";
+    private static final String DELETE = "DELETE";
 
     protected Map<AttributeSet, String> map = new HashMap<>();
 
+    protected final Context context;
     protected final AttributeExtractor attributeExtractor;
     protected final ResponseComposer responseComposer;
 
-    public CrudDispatcher(AttributeExtractor attributeExtractor, ResponseComposer responseComposer) {
+    public CrudDispatcher(Context context, AttributeExtractor attributeExtractor, ResponseComposer responseComposer) {
+        this.context = context;
         this.attributeExtractor = attributeExtractor;
         this.responseComposer = responseComposer;
     }
@@ -31,17 +37,19 @@ public class CrudDispatcher extends Dispatcher {
         String path = request.getPath();
         String method = request.getMethod();
 
-
-        if (POST.equalsIgnoreCase(method)) {
-            return handlePost(path, request.getBody().readUtf8());
-        } else if (UPDATE.equalsIgnoreCase(path)) {
-            return handlePost(path, request.getBody().readUtf8());
-        } else if (GET.equalsIgnoreCase(method)) {
-            return handleGet(path);
-        } else if (DELETE.equalsIgnoreCase(method)) {
-            return handleDelete(path);
+        switch (method.toUpperCase()) {
+            case POST:
+            case PUT:
+                return handleCreate(path, request.getBody().readUtf8());
+            case PATCH:
+                return handlePatch(path, request.getBody().readUtf8());
+            case GET:
+                return handleGet(path);
+            case DELETE:
+                return handleDelete(path);
+            default:
+                return null;
         }
-        return null;
     }
 
     /**
@@ -51,7 +59,7 @@ public class CrudDispatcher extends Dispatcher {
      * @param s
      * @return
      */
-    public MockResponse handlePost(String path, String s) {
+    public MockResponse handleCreate(String path, String s) {
         MockResponse response = new MockResponse();
         AttributeSet features = AttributeSet.merge(attributeExtractor.fromPath(path), attributeExtractor.fromResource(s));
         map.put(features, s);
@@ -60,14 +68,42 @@ public class CrudDispatcher extends Dispatcher {
         return response;
     }
 
-     /**
+    /**
+     * Patches the specified object to the in-memory db.
+     *
+     * @param path
+     * @param s
+     * @return
+     */
+    public MockResponse handlePatch(String path, String s) {
+        MockResponse response = new MockResponse();
+        String body = doGet(path);
+        if (body == null) {
+            response.setResponseCode(404);
+        } else {
+            try {
+                JsonNode patch = context.getMapper().readTree(s);
+                JsonNode source = context.getMapper().readTree(body);
+                JsonNode updated = JsonPatch.apply(patch, source);
+                response.setResponseCode(202);
+                response.setBody(context.getMapper().writeValueAsString(updated));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+        return response;
+    }
+
+    /**
      * Updates the specified object to the in-memory db.
+     *
      * @param path
      * @param s
      * @return
      */
     public MockResponse handleUpdate(String path, String s) {
-        return handlePost(path, s);
+        return handleCreate(path, s);
     }
 
     /**
@@ -78,20 +114,13 @@ public class CrudDispatcher extends Dispatcher {
      */
     public MockResponse handleGet(String path) {
         MockResponse response = new MockResponse();
-        List<String> items = new ArrayList<>();
-        AttributeSet query = attributeExtractor.extract(path);
 
-        for (Map.Entry<AttributeSet, String> entry : map.entrySet()) {
-            if (entry.getKey().matches(query)) {
-                items.add(entry.getValue());
-            }
-        }
-
-        if (!items.isEmpty()) {
-            response.setBody(responseComposer.compose(items));
-            response.setResponseCode(200);
-        } else {
+        String body = doGet(path);
+        if (body == null) {
             response.setResponseCode(404);
+        } else {
+            response.setResponseCode(200);
+            response.setBody(body);
         }
         return response;
     }
@@ -99,6 +128,7 @@ public class CrudDispatcher extends Dispatcher {
 
     /**
      * Performs a delete for the corresponding object from the in-memory db.
+     *
      * @param path
      * @return
      */
@@ -113,7 +143,7 @@ public class CrudDispatcher extends Dispatcher {
             }
         }
         if (!items.isEmpty()) {
-            for (AttributeSet item: items)  {
+            for (AttributeSet item : items) {
                 map.remove(item);
             }
             response.setResponseCode(200);
@@ -133,5 +163,24 @@ public class CrudDispatcher extends Dispatcher {
 
     public ResponseComposer getResponseComposer() {
         return responseComposer;
+    }
+
+
+    private String doGet(String path) {
+        List<String> items = new ArrayList<>();
+        AttributeSet query = attributeExtractor.extract(path);
+        for (Map.Entry<AttributeSet, String> entry : map.entrySet()) {
+            if (entry.getKey().matches(query)) {
+                items.add(entry.getValue());
+            }
+        }
+
+        if (items.isEmpty()) {
+            return null;
+        } else if (items.size() == 1) {
+            return items.get(0);
+        } else {
+            return responseComposer.compose(items);
+        }
     }
 }
