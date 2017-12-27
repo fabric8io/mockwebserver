@@ -96,7 +96,7 @@ public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder
         return new Emitable<EventDoneable<T>>() {
             @Override
             public EventDoneable<T> andEmit(Object event) {
-                session.getTimedEvents().add(toWebSocketMessage(event));
+                session.getTimedEvents().add(toWebSocketMessage(millis, event));
                 return InlineWebSocketSessionBuilder.this;
             }
         };
