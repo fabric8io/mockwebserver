@@ -76,7 +76,8 @@ class CrudDispatcherTest extends Specification {
 
     def "should be able to get after a post"() {
         given:
-        DefaultMockServer server = new DefaultMockServer(new Context(), new  MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), new CrudDispatcher(extractor, composer), false)
+        Context context = new Context()
+        DefaultMockServer server = new DefaultMockServer(context, new  MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), new CrudDispatcher(context, extractor, composer), false)
         when:
         server.start()
         then:
@@ -90,7 +91,8 @@ class CrudDispatcherTest extends Specification {
 
     def "should be able to delete after a post"() {
         given:
-        DefaultMockServer server = new DefaultMockServer(new Context(), new MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), new CrudDispatcher(extractor, composer), false)
+        Context context = new Context()
+        DefaultMockServer server = new DefaultMockServer(context, new MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), new CrudDispatcher(context, extractor, composer), false)
         when:
         server.start()
         then:
