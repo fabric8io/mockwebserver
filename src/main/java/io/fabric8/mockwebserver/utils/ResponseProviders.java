@@ -19,7 +19,9 @@ import okhttp3.Headers;
 import okhttp3.mockwebserver.RecordedRequest;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Useful methods for creating basic response providers.
@@ -30,6 +32,13 @@ public class ResponseProviders {
     public static <R> ResponseProvider<R> of(int statusCode, R element) {
         if (element != null) {
             return new FixedResponseProvider<>(statusCode, element);
+        }
+        return null;
+    }
+
+    public static <R> ResponseProvider<R> of(int statusCode, R element, Map<String, String> map) {
+        if (element != null) {
+            return new FixedResponseProvider<>(statusCode, element, map);
         }
         return null;
     }
@@ -73,14 +82,27 @@ public class ResponseProviders {
     private static class FixedResponseProvider<T> implements ResponseProvider<T> {
 
         private int statusCode;
-
         private T element;
-
         private Headers headers = new Headers.Builder().build();
 
         public FixedResponseProvider(int statusCode, T element) {
+            this(statusCode, element, new HashMap<String, String>());
+        }
+
+        public FixedResponseProvider(int statusCode, T element, Map<String, String> headers) {
             this.statusCode = statusCode;
             this.element = element;
+            Headers.Builder builder = new Headers.Builder();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.set(entry.getKey(), entry.getValue());
+            }
+            this.headers = builder.build();
+        }
+
+        public FixedResponseProvider(int statusCode, T element, Headers headers) {
+            this.statusCode = statusCode;
+            this.element = element;
+            this.headers = headers;
         }
 
         @Override

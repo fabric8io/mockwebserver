@@ -18,6 +18,7 @@ package io.fabric8.mockwebserver.internal;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -183,17 +184,20 @@ public class MockServerExpectationImpl implements MockServerExpectation {
     return new InlineWebSocketSessionBuilder<>(context, new Function<WebSocketSession, TimesOnceableOrHttpHeaderable<Void>>() {
       @Override
       public TimesOnceableOrHttpHeaderable<Void> apply(final WebSocketSession webSocketSession) {
-        return new TimesOnceableOrHttpHeaderable<Void>() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("Upgrade", "websocket");
+        headers.put("Connection", "Upgrade");
 
+        return new TimesOnceableOrHttpHeaderable<Void>() {
           @Override
           public Void always() {
-            enqueue(new SimpleRequest(method, path), new SimpleResponse(true, null, webSocketSession));
+            enqueue(new SimpleRequest(method, path), new SimpleResponse(true, ResponseProviders.of(101, "", headers) , webSocketSession));
             return null;//Void
           }
 
           @Override
           public Void once() {
-            enqueue(new SimpleRequest(method, path), new SimpleResponse(false, null, webSocketSession));
+            enqueue(new SimpleRequest(method, path), new SimpleResponse(false, ResponseProviders.of(101, "", headers), webSocketSession));
             return null;//Void
           }
 
@@ -207,12 +211,14 @@ public class MockServerExpectationImpl implements MockServerExpectation {
 
           @Override
           public TimesOnceableOrHttpHeaderable<Void> withHeader(String header) {
-            return null;//Void
+            headers.put(header, "");
+            return this;//Void
           }
 
           @Override
           public TimesOnceableOrHttpHeaderable<Void> withHeader(String name, String value) {
-            return null;//Void
+            headers.put(name, value);
+            return this;//Void
           }
         };
       }

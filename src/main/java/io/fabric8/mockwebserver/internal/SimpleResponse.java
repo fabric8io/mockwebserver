@@ -66,12 +66,13 @@ public class SimpleResponse implements ServerResponse {
 
   public MockResponse toMockResponse(RecordedRequest request) {
     MockResponse mockResponse = new MockResponse();
+    mockResponse.setHeaders(bodyProvider.getHeaders());
+    mockResponse.setResponseCode(bodyProvider.getStatusCode());
+
     if (webSocketSession != null) {
       mockResponse.withWebSocketUpgrade(webSocketSession);
     } else {
-      mockResponse.setHeaders(bodyProvider.getHeaders());
       mockResponse.setBody(bodyProvider.getBody(request));
-      mockResponse.setResponseCode(bodyProvider.getStatusCode());
     }
 
     if (responseDelay > 0) {
