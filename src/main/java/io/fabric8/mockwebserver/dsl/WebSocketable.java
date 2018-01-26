@@ -16,8 +16,12 @@
 
 package io.fabric8.mockwebserver.dsl;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 public interface WebSocketable<T> {
 
   T andUpgradeToWebSocket();
+
+  T andUpgradeToWebSocket(ScheduledExecutorService executor);
 
 }

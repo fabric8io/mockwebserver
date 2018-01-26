@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +46,7 @@ public class WebSocketSession extends WebSocketListener {
     private final List<WebSocketMessage> timedEvents = new ArrayList<>();
 
     private final AtomicReference<WebSocket> webSocketRef = new AtomicReference<>();
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService executor;
 
     private final Context context;
 
@@ -54,11 +55,12 @@ public class WebSocketSession extends WebSocketListener {
         webSocketRef.get().close(code, reason);
     }
 
-    public WebSocketSession(Context context, List<WebSocketMessage> open, WebSocketMessage failure, Exception cause) {
+    public WebSocketSession(Context context, ScheduledExecutorService executor, List<WebSocketMessage> open, WebSocketMessage failure, Exception cause) {
         this.context = context;
         this.open = open;
         this.failure = failure;
         this.cause = cause;
+        this.executor = executor;
     }
 
     @Override

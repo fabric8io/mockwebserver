@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.fabric8.mockwebserver.Context;
@@ -226,6 +227,52 @@ public class MockServerExpectationImpl implements MockServerExpectation {
   }
 
   @Override
+  public WebSocketSessionBuilder<TimesOnceableOrHttpHeaderable<Void>> andUpgradeToWebSocket(ScheduledExecutorService executor) {
+    return new InlineWebSocketSessionBuilder<>(context, executor, new Function<WebSocketSession, TimesOnceableOrHttpHeaderable<Void>>() {
+      @Override
+      public TimesOnceableOrHttpHeaderable<Void> apply(final WebSocketSession webSocketSession) {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("Upgrade", "websocket");
+        headers.put("Connection", "Upgrade");
+
+        return new TimesOnceableOrHttpHeaderable<Void>() {
+          @Override
+          public Void always() {
+            enqueue(new SimpleRequest(method, path), new SimpleResponse(true, ResponseProviders.of(101, "", headers) , webSocketSession));
+            return null;//Void
+          }
+
+          @Override
+          public Void once() {
+            enqueue(new SimpleRequest(method, path), new SimpleResponse(false, ResponseProviders.of(101, "", headers), webSocketSession));
+            return null;//Void
+          }
+
+          @Override
+          public Void times(int times) {
+            for (int i = 0; i < times; i++) {
+              once();
+            }
+            return null;//Void
+          }
+
+          @Override
+          public TimesOnceableOrHttpHeaderable<Void> withHeader(String header) {
+            headers.put(header, "");
+            return this;//Void
+          }
+
+          @Override
+          public TimesOnceableOrHttpHeaderable<Void> withHeader(String name, String value) {
+            headers.put(name, value);
+            return this;//Void
+          }
+        };
+      }
+    });
+  }
+
+  @Override
   public TimesOnceableOrHttpHeaderable<Void> withHeader(String header) {
     bodyProvider.setHeaders(bodyProvider.getHeaders().newBuilder().add(header).build());
     return new MockServerExpectationImpl(context, method, path, bodyProvider, chunksProvider, delay, TimeUnit.MILLISECONDS, times, responses);
@@ -323,7 +370,7 @@ public class MockServerExpectationImpl implements MockServerExpectation {
 
   private List<String> toString(Object object[]) {
     List<String> strings = new ArrayList<>(object.length);
-    for (int i=0;i<object.length;i++) {
+    for (int i = 0; i < object.length; i++) {
       strings.add(toString(object[i]));
     }
     return strings;
