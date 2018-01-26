@@ -102,6 +102,11 @@ public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder
         };
     }
 
+    @Override
+    public Emitable<EventDoneable<T>> immediately() {
+        return waitFor(0);
+    }
+
     private List<WebSocketMessage> toWebSocketMessages(Object... messages) {
         List<WebSocketMessage> response = new ArrayList<>();
         for (Object msg : messages) {
