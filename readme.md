@@ -38,7 +38,7 @@ To create a request using the ``okhttp`` you just need to obtain the url from Mo
 
 To cleanup after using the Mock Web Server:
 
-    server.stop();
+    server.shutdown();
 
 ### Setting expectations ###
 
