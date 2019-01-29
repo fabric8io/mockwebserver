@@ -78,7 +78,7 @@
 
         <!-- Dependencies -->
         <okhttp.version>3.12.0</okhttp.version>
-        <jackson.version>2.9.7</jackson.version>
+        <jackson.version>2.9.8</jackson.version>
         <sundrio.version>0.13.1</sundrio.version>
         <zjsonpatch.version>0.3.0</zjsonpatch.version>
 
