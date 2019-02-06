@@ -27,6 +27,7 @@ import okhttp3.RequestBody
 import okhttp3.MediaType
 import okhttp3.mockwebserver.MockWebServer
 import spock.lang.Specification
+import com.fasterxml.jackson.databind.JsonNode
 
 class CrudDispatcherTest extends Specification {
 
@@ -72,6 +73,29 @@ class CrudDispatcherTest extends Specification {
             }
             return sb.toString().trim()
         }
+    }
+
+    def "should be able to get after a patch"() {
+        given:
+        Context context = new Context()
+        DefaultMockServer server = new DefaultMockServer(context, new  MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), new CrudDispatcher(context, extractor, composer), false)
+        String startingJson = """{"foo":{"bar":"startingValue","baz":"keepThis"} }"""
+        String patch = """[{"op":"replace","path":"/foo/bar","value":"canary"}]"""
+        when:
+        server.start()
+        then:
+        OkHttpClient client = new OkHttpClient()
+        Request post = new Request.Builder().post(RequestBody.create(MediaType.parse("application/json"), startingJson)).url(server.url("/namespace/test/name/one")).build()
+        client.newCall(post).execute()
+
+        Request patchRequest = new Request.Builder().patch(RequestBody.create(MediaType.parse("application/strategic-merge-patch+json"), patch)).url(server.url("/namespace/test/name/one")).build()
+        client.newCall(patchRequest).execute()
+
+        Request get = new Request.Builder().get().url(server.url("/namespace/test/name/one")).build()
+        Response response = client.newCall(get).execute()
+        JsonNode responseJson = context.getMapper().readValue(response.body().string(), JsonNode.class);
+        JsonNode expected = context.mapper.readValue("""{"foo": {"bar": "canary", "baz": "keepThis"}}""", JsonNode.class)
+        expected == responseJson
     }
 
     def "should be able to get after a post"() {
