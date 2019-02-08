@@ -85,8 +85,12 @@ public class CrudDispatcher extends Dispatcher {
                 JsonNode patch = context.getMapper().readTree(s);
                 JsonNode source = context.getMapper().readTree(body);
                 JsonNode updated = JsonPatch.apply(patch, source);
+                String updatedAsString = context.getMapper().writeValueAsString(updated);
+                AttributeSet features = AttributeSet.merge(attributeExtractor.fromPath(path),
+                        attributeExtractor.fromResource(updatedAsString));
+                map.put(features, updatedAsString);
                 response.setResponseCode(202);
-                response.setBody(context.getMapper().writeValueAsString(updated));
+                response.setBody(updatedAsString);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
