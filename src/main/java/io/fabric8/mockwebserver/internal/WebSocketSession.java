@@ -16,22 +16,19 @@
 
 package io.fabric8.mockwebserver.internal;
 
+import io.fabric8.mockwebserver.dsl.InputMatcher;
+import io.fabric8.mockwebserver.dsl.ResponseProducer;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import io.fabric8.mockwebserver.Context;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
-import okio.Buffer;
 import okio.ByteString;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,7 +39,7 @@ public class WebSocketSession extends WebSocketListener {
     private final WebSocketMessage failure;
     private final Exception cause;
 
-    private final Map<Object, Queue<WebSocketMessage>> requestEvents = new HashMap<>();
+    private final Map<InputMatcher, Queue<ResponseProducer>> requestEvents = new HashMap<>();
     private final List<WebSocketMessage> timedEvents = new ArrayList<>();
 
     private final AtomicReference<WebSocket> webSocketRef = new AtomicReference<>();
@@ -85,17 +82,20 @@ public class WebSocketSession extends WebSocketListener {
 
     @Override
     public void onMessage(WebSocket webSocket, String in) {
-        Queue<WebSocketMessage> queue = requestEvents.get(in);
-        if (queue != null && !queue.isEmpty()) {
-            WebSocketMessage msg = queue.peek();
-            send(msg);
-            if (msg.isToBeRemoved()) {
-                queue.remove();
+        for (InputMatcher matcher : requestEvents.keySet()) {
+            if (matcher.matches(in)) {
+                Queue<ResponseProducer> queue = requestEvents.get(matcher);
+                ResponseProducer responseProducer = queue.peek();
+                WebSocketMessage msg = responseProducer.apply(in);
+                send(msg);
+                if (msg.isToBeRemoved()) {
+                    queue.remove();
+                }
+                checkIfShouldClose();
+                return;
             }
-            checkIfShouldClose();
-        } else {
-            webSocketRef.get().close(1002, "Unexpected message:" + in);
         }
+        webSocketRef.get().close(1002, "Unexpected message:" + in.substring(0, in.length() > 80 ? 80 : in.length()));
     }
 
     @Override
@@ -114,7 +114,7 @@ public class WebSocketSession extends WebSocketListener {
         return cause;
     }
 
-    public Map<Object, Queue<WebSocketMessage>> getRequestEvents() {
+    public Map<InputMatcher, Queue<ResponseProducer>> getRequestEvents() {
         return requestEvents;
     }
 

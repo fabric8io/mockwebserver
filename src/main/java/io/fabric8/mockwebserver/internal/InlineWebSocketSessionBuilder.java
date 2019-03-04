@@ -24,6 +24,8 @@ import io.fabric8.mockwebserver.dsl.EventDoneable;
 import io.fabric8.mockwebserver.dsl.Function;
 import io.fabric8.mockwebserver.dsl.TimesOrOnceable;
 import io.fabric8.mockwebserver.dsl.WebSocketSessionBuilder;
+import io.fabric8.mockwebserver.dsl.InputMatcher;
+import io.fabric8.mockwebserver.dsl.ResponseProducer;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -79,20 +81,20 @@ public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder
                 return new TimesOrOnceable<EventDoneable<T>>() {
                     @Override
                     public EventDoneable<T> always() {
-                        enqueue(in, toWebSocketMessage(event, false));
+                        enqueue(in, event, false);
                         return InlineWebSocketSessionBuilder.this;
                     }
 
                     @Override
                     public EventDoneable<T> once() {
-                        enqueue(in, toWebSocketMessage(event, true));
+                        enqueue(in, event, true);
                         return InlineWebSocketSessionBuilder.this;
                     }
 
                     @Override
                     public EventDoneable<T> times(int times) {
                         for (int i = 0; i < times; i++) {
-                            enqueue(in, toWebSocketMessage(event, true));
+                            enqueue(in, event, true);
                         }
                         return InlineWebSocketSessionBuilder.this;
                     }
@@ -151,13 +153,27 @@ public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder
         }
     }
 
-    private void enqueue(Object req, WebSocketMessage resp) {
-        Queue<WebSocketMessage> queuedResponses = session.getRequestEvents().get(req);
+    private void enqueue(Object req, Object resp, boolean toBeRemoved) {
+        InputMatcher matcher = null;
+        if(!(req instanceof InputMatcher)){
+            matcher = req::equals;
+        } else {
+            matcher = (InputMatcher) req;
+        }
+
+        ResponseProducer responseProducer = null;
+        if(!(resp instanceof ResponseProducer)){
+            responseProducer = input -> toWebSocketMessage(resp, toBeRemoved);
+        } else {
+            responseProducer =  (ResponseProducer) resp;
+        }
+
+        Queue<ResponseProducer> queuedResponses = session.getRequestEvents().get(matcher);
         if (queuedResponses == null) {
             queuedResponses = new ArrayDeque<>();
-            session.getRequestEvents().put(req, queuedResponses);
+            session.getRequestEvents().put(matcher, queuedResponses);
         }
-        queuedResponses.add(resp);
+        queuedResponses.add(responseProducer);
     }
 
 }
