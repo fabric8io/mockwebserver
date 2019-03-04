@@ -28,7 +28,7 @@
     <groupId>io.fabric8</groupId>
     <artifactId>mockwebserver</artifactId>
     <name>Fabric8 :: Mock Web Server</name>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
 
     <url>http://fabric8.io/</url>
     <inceptionYear>2015</inceptionYear>
@@ -63,14 +63,6 @@
         <url>http://github.com/fabric8io/mockwebserver/</url>
         <tag>${project.version}</tag>
     </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>oss-sonatype-staging</id>
-            <name>Sonatype Staging Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-    </distributionManagement>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -268,5 +260,18 @@
             </properties>
         </profile>
     </profiles>
+
+
+    <distributionManagement>
+        <repository>
+            <id>pslte_pm-generic</id>
+            <url>https://artifactory-krk.mot-solutions.com/artifactory/pslte_pm-generic/</url>
+        </repository>
+        <snapshotRepository>
+            <id>pslte_pm-generic</id>
+            <url>https://artifactory-krk.mot-solutions.com/artifactory/pslte_pm-generic/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 
 </project>
