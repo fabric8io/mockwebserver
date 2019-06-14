@@ -192,7 +192,8 @@ class DefaultMockServerTest extends Specification {
         given:
         CountDownLatch opened = new CountDownLatch(1)
         CountDownLatch closed = new CountDownLatch(1)
-        Queue<String> messages = new ArrayBlockingQueue<String>(1)
+        CountDownLatch queued = new CountDownLatch(2)
+        Queue<String> messages = new ArrayBlockingQueue<String>(2)
         AtomicReference<WebSocket> webSocketRef = new AtomicReference<>()
 
         WebSocketListener listener = new WebSocketListener() {
@@ -205,6 +206,7 @@ class DefaultMockServerTest extends Specification {
             @Override
             void onMessage(WebSocket webSocket, String text) {
                 messages.add(text)
+                queued.countDown()
             }
 
             @Override
@@ -241,6 +243,7 @@ class DefaultMockServerTest extends Specification {
         WebSocket ws = webSocketRef.get()
         ws.send("create root")
         ws.send("delete root")
+        queued.await(10, TimeUnit.SECONDS)
         messages.poll(10, TimeUnit.SECONDS) == "CREATED"
         messages.poll(10, TimeUnit.SECONDS) == "DELETED"
 
