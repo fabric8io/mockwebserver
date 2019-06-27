@@ -415,4 +415,148 @@ class DefaultMockServerTest extends Specification {
             response.close()
         }
     }
+
+    def "when setting an httprequest/response websocket message it should be fired when the event is triggered"() {
+        given:
+        CountDownLatch opened = new CountDownLatch(1)
+        CountDownLatch closed = new CountDownLatch(1)
+        CountDownLatch queued = new CountDownLatch(2)
+        Queue<String> messages = new ArrayBlockingQueue<String>(2)
+        AtomicReference<WebSocket> webSocketRef = new AtomicReference<>()
+
+        WebSocketListener listener = new WebSocketListener() {
+            @Override
+            void onOpen(WebSocket webSocket, Response response) {
+                webSocketRef.set(webSocket)
+                opened.countDown()
+            }
+
+            @Override
+            void onMessage(WebSocket webSocket, String text) {
+                messages.add(text)
+                queued.countDown()
+            }
+
+            @Override
+            void onMessage(WebSocket webSocket, ByteString bytes) {
+                onMessage(webSocket, bytes.utf8());
+            }
+
+            @Override
+            void onClosing(WebSocket webSocket, int code, String reason) {
+                webSocket.close(code, reason);
+            }
+
+            @Override
+            void onClosed(WebSocket webSocket, int code, String reason) {
+                closed.countDown()
+            }
+        }
+
+        server.expect().get().withPath("/api/v1/users/watch")
+                .andUpgradeToWebSocket()
+                .open()
+                .expectHttpRequest("/api/v1/create").andEmit("CREATED").once()
+                .expectHttpRequest("/api/v1/delete").andEmit("DELETED").once()
+                .done()
+                .once()
+
+
+        when:
+        Request request = new Request.Builder().url(server.url("/api/v1/users/watch")).get().build()
+        webSocketRef.set(client.newWebSocket(request, listener))
+
+        then:
+        opened.await(10, TimeUnit.SECONDS)
+        WebSocket ws = webSocketRef.get()
+
+        when:
+        request = new Request.Builder().url(server.url("/api/v1/create")).get().build()
+        client.newCall(request).execute()
+
+        then:
+        messages.poll(10, TimeUnit.SECONDS) == "CREATED"
+
+        when:
+        request = new Request.Builder().url(server.url("/api/v1/delete")).get().build()
+        client.newCall(request).execute()
+
+        then:
+        messages.poll(10, TimeUnit.SECONDS) == "DELETED"
+
+        when:
+        ws.close(1000, "just close")
+
+        then:
+        closed.await(10, TimeUnit.SECONDS)
+    }
+
+    def "when setting an sentWebSocketMessage/response websocket message it should be fired when the event is triggered"() {
+        given:
+        CountDownLatch opened = new CountDownLatch(1)
+        CountDownLatch closed = new CountDownLatch(1)
+        CountDownLatch queued = new CountDownLatch(2)
+        Queue<String> messages = new ArrayBlockingQueue<String>(2)
+        AtomicReference<WebSocket> webSocketRef = new AtomicReference<>()
+
+        WebSocketListener listener = new WebSocketListener() {
+            @Override
+            void onOpen(WebSocket webSocket, Response response) {
+                webSocketRef.set(webSocket)
+                opened.countDown()
+            }
+
+            @Override
+            void onMessage(WebSocket webSocket, String text) {
+                messages.add(text)
+                queued.countDown()
+            }
+
+            @Override
+            void onMessage(WebSocket webSocket, ByteString bytes) {
+                onMessage(webSocket, bytes.utf8());
+            }
+
+            @Override
+            void onClosing(WebSocket webSocket, int code, String reason) {
+                webSocket.close(code, reason);
+            }
+
+            @Override
+            void onClosed(WebSocket webSocket, int code, String reason) {
+                closed.countDown()
+            }
+        }
+
+        server.expect().get().withPath("/api/v1/users/watch")
+                .andUpgradeToWebSocket()
+                .open()
+                .expectHttpRequest("/api/v1/create").andEmit("CREATED").once()
+                .expectSentWebSocketMessage("CREATED").andEmit("DELETED").once()
+                .done()
+                .once()
+
+
+        when:
+        Request request = new Request.Builder().url(server.url("/api/v1/users/watch")).get().build()
+        webSocketRef.set(client.newWebSocket(request, listener))
+
+        then:
+        opened.await(10, TimeUnit.SECONDS)
+        WebSocket ws = webSocketRef.get()
+
+        when:
+        request = new Request.Builder().url(server.url("/api/v1/create")).get().build()
+        client.newCall(request).execute()
+
+        then:
+        messages.poll(10, TimeUnit.SECONDS) == "CREATED"
+        messages.poll(10, TimeUnit.SECONDS) == "DELETED"
+
+        when:
+        ws.close(1000, "just close")
+
+        then:
+        closed.await(10, TimeUnit.SECONDS)
+    }
 }

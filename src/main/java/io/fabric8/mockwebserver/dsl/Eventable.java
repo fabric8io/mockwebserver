@@ -20,6 +20,10 @@ public interface Eventable<T> {
 
     Emitable<TimesOrOnceable<T>> expect(Object in);
 
+    Emitable<TimesOrOnceable<T>> expectHttpRequest(final String path);
+
+    Emitable<TimesOrOnceable<T>> expectSentWebSocketMessage(final Object in);
+
     Emitable<T> waitFor(long millis);
 
     Emitable<T> immediately();
