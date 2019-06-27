@@ -102,6 +102,66 @@ public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder
     }
 
     @Override
+    public Emitable<TimesOrOnceable<EventDoneable<T>>> expectHttpRequest(final String path) {
+        return new Emitable<TimesOrOnceable<EventDoneable<T>>>() {
+            @Override
+            public TimesOrOnceable<EventDoneable<T>> andEmit(final Object event) {
+                return new TimesOrOnceable<EventDoneable<T>>() {
+                    @Override
+                    public EventDoneable<T> always() {
+                        enqueueSimpleRequest(new SimpleRequest(path), toWebSocketMessage(event, false));
+                        return InlineWebSocketSessionBuilder.this;
+                    }
+
+                    @Override
+                    public EventDoneable<T> once() {
+                        enqueueSimpleRequest(new SimpleRequest(path), toWebSocketMessage(event, true));
+                        return InlineWebSocketSessionBuilder.this;
+                    }
+
+                    @Override
+                    public EventDoneable<T> times(int times) {
+                        for (int i = 0; i < times; i++) {
+                            enqueueSimpleRequest(new SimpleRequest(path), toWebSocketMessage(event, true));
+                        }
+                        return InlineWebSocketSessionBuilder.this;
+                    }
+                };
+            }
+        };
+    }
+
+    @Override
+    public Emitable<TimesOrOnceable<EventDoneable<T>>> expectSentWebSocketMessage(final Object in) {
+        return new Emitable<TimesOrOnceable<EventDoneable<T>>>() {
+            @Override
+            public TimesOrOnceable<EventDoneable<T>> andEmit(final Object event) {
+                return new TimesOrOnceable<EventDoneable<T>>() {
+                    @Override
+                    public EventDoneable<T> always() {
+                        enqueueForSentWebSocketMessage(in, toWebSocketMessage(event, false));
+                        return InlineWebSocketSessionBuilder.this;
+                    }
+
+                    @Override
+                    public EventDoneable<T> once() {
+                        enqueueForSentWebSocketMessage(in, toWebSocketMessage(event, true));
+                        return InlineWebSocketSessionBuilder.this;
+                    }
+
+                    @Override
+                    public EventDoneable<T> times(int times) {
+                        for (int i = 0; i < times; i++) {
+                            enqueueForSentWebSocketMessage(in, toWebSocketMessage(event, true));
+                        }
+                        return InlineWebSocketSessionBuilder.this;
+                    }
+                };
+            }
+        };
+    }
+
+    @Override
     public Emitable<EventDoneable<T>> waitFor(final long millis) {
         return new Emitable<EventDoneable<T>>() {
             @Override
@@ -156,6 +216,24 @@ public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder
         if (queuedResponses == null) {
             queuedResponses = new ArrayDeque<>();
             session.getRequestEvents().put(req, queuedResponses);
+        }
+        queuedResponses.add(resp);
+    }
+
+    private void enqueueForSentWebSocketMessage(Object req, WebSocketMessage resp) {
+        Queue<WebSocketMessage> queuedResponses = session.getSentWebSocketMessagesRequestEvents().get(req);
+        if (queuedResponses == null) {
+            queuedResponses = new ArrayDeque<>();
+            session.getSentWebSocketMessagesRequestEvents().put(req, queuedResponses);
+        }
+        queuedResponses.add(resp);
+    }
+
+    private void enqueueSimpleRequest(SimpleRequest req, WebSocketMessage resp) {
+        Queue<WebSocketMessage> queuedResponses = session.getHttpRequestEvents().get(req);
+        if (queuedResponses == null) {
+            queuedResponses = new ArrayDeque<>();
+            session.getHttpRequestEvents().put(req, queuedResponses);
         }
         queuedResponses.add(resp);
     }

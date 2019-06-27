@@ -24,12 +24,15 @@ import io.fabric8.mockwebserver.ServerRequest;
 import io.fabric8.mockwebserver.ServerResponse;
 import io.fabric8.mockwebserver.dsl.HttpMethod;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
 public class MockDispatcher extends Dispatcher {
 
     private final Map<ServerRequest, Queue<ServerResponse>> responses;
+    private final List<WebSocketSession> webSocketSessions = new ArrayList<>();
 
     public MockDispatcher(Map<ServerRequest, Queue<ServerResponse>> responses) {
         this.responses = responses;
@@ -37,6 +40,10 @@ public class MockDispatcher extends Dispatcher {
 
     @Override
     public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+        for (WebSocketSession webSocketSession : webSocketSessions) {
+            webSocketSession.dispatch(request);
+        }
+
         HttpMethod method = HttpMethod.valueOf(request.getMethod());
         String path = request.getPath();
         SimpleRequest key = new SimpleRequest(method, path);
@@ -56,6 +63,12 @@ public class MockDispatcher extends Dispatcher {
             return new MockResponse().setResponseCode(404);
         } else if (!response.isRepeatable()) {
             queue.remove();
+        }
+        if (response instanceof SimpleResponse) {
+            SimpleResponse simpleResponse = (SimpleResponse) response;
+            if (simpleResponse.getWebSocketSession() != null) {
+                webSocketSessions.add(simpleResponse.getWebSocketSession());
+            }
         }
         return response.toMockResponse(request);
     }
