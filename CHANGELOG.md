@@ -1,6 +1,17 @@
 ## CHANGELOG
 
-### 0.1.3-SNAPSHOT
+### 0.1.4-SNAPSHOT
+#### Bugs
+
+#### Improvements
+
+#### Dependency Upgrade
+
+#### New Feature
+
+
+
+### 0.1.3 (03-09-2019)
 #### Bugs
 
 #### Improvements
