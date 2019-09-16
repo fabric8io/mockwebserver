@@ -67,7 +67,7 @@ public class ChunkedResponse implements ServerResponse {
         MockResponse mockResponse = new MockResponse();
         mockResponse.setHeaders(bodyProvider.getHeaders());
         mockResponse.setChunkedBody(concatBody(request), DEFAULT_MAX_CHUNK_SIZE);
-        mockResponse.setResponseCode(bodyProvider.getStatusCode());
+        mockResponse.setResponseCode(bodyProvider.getStatusCode(request));
 
         if (responseDelay > 0) {
             mockResponse.setBodyDelay(responseDelay, responseDelayUnit);

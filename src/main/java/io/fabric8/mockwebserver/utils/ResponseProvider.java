@@ -16,13 +16,14 @@
 package io.fabric8.mockwebserver.utils;
 
 import okhttp3.Headers;
+import okhttp3.mockwebserver.RecordedRequest;
 
 /**
  * A class that allows returning a response given a certain request.
  */
 public interface ResponseProvider<T> extends BodyProvider<T> {
 
-    int getStatusCode();
+    int getStatusCode(RecordedRequest request);
 
     Headers getHeaders();
 
