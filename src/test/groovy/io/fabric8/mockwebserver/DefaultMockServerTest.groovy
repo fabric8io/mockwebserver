@@ -361,7 +361,7 @@ class DefaultMockServerTest extends Specification {
         server.expect().get().withPath("/api/v1/users").andReply(new ResponseProvider<Object>() {
             private Headers headers = new Headers.Builder().build()
 
-            int getStatusCode() {
+            int getStatusCode(RecordedRequest request) {
                 return 200 + (counter[0]++)
             }
 

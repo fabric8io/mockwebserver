@@ -56,7 +56,7 @@ public class ResponseProviders {
                 private Headers headers = new Headers.Builder().build();
 
                 @Override
-                public int getStatusCode() {
+                public int getStatusCode(RecordedRequest request) {
                     return statusCode;
                 }
 
@@ -111,7 +111,7 @@ public class ResponseProviders {
         }
 
         @Override
-        public int getStatusCode() {
+        public int getStatusCode(RecordedRequest request) {
             return statusCode;
         }
 

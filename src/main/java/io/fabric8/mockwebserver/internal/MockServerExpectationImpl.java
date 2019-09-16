@@ -311,8 +311,8 @@ public class MockServerExpectationImpl implements MockServerExpectation {
       }
 
       @Override
-      public int getStatusCode() {
-        return provider.getStatusCode();
+      public int getStatusCode(RecordedRequest request) {
+        return provider.getStatusCode(request);
       }
 
       @Override
@@ -340,8 +340,8 @@ public class MockServerExpectationImpl implements MockServerExpectation {
       }
 
       @Override
-      public int getStatusCode() {
-        return provider.getStatusCode();
+      public int getStatusCode(RecordedRequest request) {
+        return provider.getStatusCode(request);
       }
 
       @Override
