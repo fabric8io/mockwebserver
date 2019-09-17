@@ -1,6 +1,10 @@
 Mock Web Server
 ---------------
 
+[![CircleCI](https://circleci.com/gh/fabric8io/mockwebserver.svg?style=svg)](https://circleci.com/gh/fabric8io/mockwebserver)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.fabric8/mockwebserver/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/io.fabric8/mockwebserver/)
+
+
 This is a DSL wrapper around the ``okhttp`` [mockwebserver](https://github.com/square/okhttp/tree/master/mockwebserver), that intends to make it easier to use.
 
 **Features**:
