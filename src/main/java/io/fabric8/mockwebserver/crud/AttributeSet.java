@@ -1,7 +1,5 @@
 package io.fabric8.mockwebserver.crud;
 
-import static io.fabric8.mockwebserver.crud.AttributeType.WITHOUT;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,7 +44,7 @@ public class AttributeSet {
     }
 
     public AttributeSet add(Attribute... attr) {
-        Map<Key, Attribute> all = new HashMap(attributes);
+        Map<Key, Attribute> all = new HashMap<>(attributes);
         for(Attribute a : attr) {
             all.put(a.getKey(), a);
         }
@@ -60,22 +58,28 @@ public class AttributeSet {
     public boolean containsKey(Key key) {
         return attributes.containsKey(key);
     }
-    
+
     /**
      * matches if attributes in db has (or doesn't if WITHOUT command) a set of candidate attributes
+     * Also supports EXISTS and NOT_EXISTS operations
      * @param candidate - set of candidate attributes
      * @return match
-     */  
+     */
     public boolean matches(AttributeSet candidate) {
-    	for (Attribute c : candidate.attributes.values()) {
-    		if (c.getType().equals(WITHOUT)) {
-    			return !attributes.values().contains(c);
-    		}
-    		if (!attributes.values().contains(c)) {
-    			return false;
-    		}
-    	}
-    	return true;
+        for (Attribute c : candidate.attributes.values()) {
+            switch (c.getType()) {
+                case EXISTS:
+                    return attributes.containsKey(c.getKey());
+                case NOT_EXISTS:
+                    return !attributes.containsKey(c.getKey());
+                case WITHOUT:
+                    return !attributes.containsValue(c);
+                case WITH:
+                default:
+                    return attributes.containsValue(c);
+            }
+        }
+        return true;
     }
 
     @Override
