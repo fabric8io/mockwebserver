@@ -7,7 +7,8 @@ import java.util.Map;
 
 public class AttributeSet {
 
-    private final Map<Key, Attribute> attributes;
+    // Package-private for testing
+    final Map<Key, Attribute> attributes;
 
     public static AttributeSet merge(AttributeSet... attributeSets) {
         Map<Key, Attribute> all = new HashMap<>();
