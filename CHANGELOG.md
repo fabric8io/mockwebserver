@@ -1,18 +1,10 @@
 ## CHANGELOG
 
-### 0.1.6-SNAPSHOT
-#### Bugs
-
-#### Improvements
-* Attribute Type matching now supports EXISTS and NOT_EXISTS
-#### Dependency Upgrade
-
-#### New Feature
-
 ### 0.1.5-SNAPSHOT
 #### Bugs
 
 #### Improvements
+* Attribute Type matching now supports EXISTS and NOT_EXISTS
 
 #### Dependency Upgrade
 
