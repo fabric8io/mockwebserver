@@ -54,4 +54,48 @@ class AttributeTest extends Specification {
         assert !fs12.equals(fs23)
         assert !fs21.equals(fs23)
     }
+
+    def "when an EXISTS attribute exists in both sets they should match"() {
+        given:
+        Attribute a1 = new Attribute("key1", "", AttributeType.EXISTS)
+        Attribute a2 = new Attribute("key2", "value2")
+        when:
+        AttributeSet f1 = new AttributeSet(a1, a2)
+        AttributeSet f2 = new AttributeSet(a1, a2)
+        then:
+        assert f2.matches(f1)
+    }
+
+    def "when an EXISTS attribute exists in one set but not the other sets they should not match"() {
+        given:
+        Attribute a1 = new Attribute("key1", "", AttributeType.EXISTS)
+        Attribute a2 = new Attribute("key2", "value2")
+        when:
+        AttributeSet f1 = new AttributeSet(a1, a2)
+        AttributeSet f2 = new AttributeSet(a2)
+        then:
+        assert !f2.matches(f1)
+    }
+
+    def "when a NOT_EXISTS attribute exists in both sets they should not match"() {
+        given:
+        Attribute a1 = new Attribute("key1", "", AttributeType.NOT_EXISTS)
+        Attribute a2 = new Attribute("key2", "value2")
+        when:
+        AttributeSet f1 = new AttributeSet(a1, a2)
+        AttributeSet f2 = new AttributeSet(a1, a2)
+        then:
+        assert !f2.matches(f1)
+    }
+
+    def "when a NOT_EXISTS attribute exists in one set but not the other sets they should match"() {
+        given:
+        Attribute a1 = new Attribute("key1", "", AttributeType.NOT_EXISTS)
+        Attribute a2 = new Attribute("key2", "value2")
+        when:
+        AttributeSet f1 = new AttributeSet(a1, a2)
+        AttributeSet f2 = new AttributeSet(a2)
+        then:
+        assert f2.matches(f1)
+    }
 }

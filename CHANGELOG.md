@@ -4,6 +4,7 @@
 #### Bugs
 
 #### Improvements
+* Attribute Type matching now supports EXISTS and NOT_EXISTS
 
 #### Dependency Upgrade
 
