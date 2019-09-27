@@ -7,7 +7,8 @@ import java.util.Map;
 
 public class AttributeSet {
 
-    private final Map<Key, Attribute> attributes;
+    // Package-private for testing
+    final Map<Key, Attribute> attributes;
 
     public static AttributeSet merge(AttributeSet... attributeSets) {
         Map<Key, Attribute> all = new HashMap<>();
@@ -66,20 +67,23 @@ public class AttributeSet {
      * @return match
      */
     public boolean matches(AttributeSet candidate) {
-        for (Attribute c : candidate.attributes.values()) {
-            switch (c.getType()) {
-                case EXISTS:
-                    return attributes.containsKey(c.getKey());
-                case NOT_EXISTS:
-                    return !attributes.containsKey(c.getKey());
-                case WITHOUT:
-                    return !attributes.containsValue(c);
-                case WITH:
-                default:
-                    return attributes.containsValue(c);
-            }
+        return candidate.attributes.values()
+            .stream()
+            .allMatch(this::satisfiesAttribute);
+    }
+
+    private boolean satisfiesAttribute(Attribute c) {
+        switch (c.getType()) {
+            case EXISTS:
+                return attributes.containsKey(c.getKey());
+            case NOT_EXISTS:
+                return !attributes.containsKey(c.getKey());
+            case WITHOUT:
+                return !attributes.containsValue(c);
+            case WITH:
+            default:
+                return attributes.containsValue(c);
         }
-        return true;
     }
 
     @Override

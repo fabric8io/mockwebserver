@@ -60,10 +60,10 @@ class AttributeTest extends Specification {
         Attribute a1 = new Attribute("key1", "", AttributeType.EXISTS)
         Attribute a2 = new Attribute("key2", "value2")
         when:
-        AttributeSet f1 = new AttributeSet(a1, a2)
-        AttributeSet f2 = new AttributeSet(a1, a2)
+        AttributeSet selector = new AttributeSet(a1, a2)
+        AttributeSet attributeSet = new AttributeSet(a1, a2)
         then:
-        assert f2.matches(f1)
+        assert attributeSet.matches(selector)
     }
 
     def "when an EXISTS attribute exists in one set but not the other sets they should not match"() {
@@ -71,10 +71,10 @@ class AttributeTest extends Specification {
         Attribute a1 = new Attribute("key1", "", AttributeType.EXISTS)
         Attribute a2 = new Attribute("key2", "value2")
         when:
-        AttributeSet f1 = new AttributeSet(a1, a2)
-        AttributeSet f2 = new AttributeSet(a2)
+        AttributeSet selector = new AttributeSet(a1, a2)
+        AttributeSet attributeSet = new AttributeSet(a2)
         then:
-        assert !f2.matches(f1)
+        assert !attributeSet.matches(selector)
     }
 
     def "when a NOT_EXISTS attribute exists in both sets they should not match"() {
@@ -82,10 +82,10 @@ class AttributeTest extends Specification {
         Attribute a1 = new Attribute("key1", "", AttributeType.NOT_EXISTS)
         Attribute a2 = new Attribute("key2", "value2")
         when:
-        AttributeSet f1 = new AttributeSet(a1, a2)
-        AttributeSet f2 = new AttributeSet(a1, a2)
+        AttributeSet selector = new AttributeSet(a1, a2)
+        AttributeSet attributeSet = new AttributeSet(a1, a2)
         then:
-        assert !f2.matches(f1)
+        assert !attributeSet.matches(selector)
     }
 
     def "when a NOT_EXISTS attribute exists in one set but not the other sets they should match"() {
@@ -93,9 +93,28 @@ class AttributeTest extends Specification {
         Attribute a1 = new Attribute("key1", "", AttributeType.NOT_EXISTS)
         Attribute a2 = new Attribute("key2", "value2")
         when:
-        AttributeSet f1 = new AttributeSet(a1, a2)
-        AttributeSet f2 = new AttributeSet(a2)
+        AttributeSet selector = new AttributeSet(a1, a2)
+        AttributeSet attributeSet = new AttributeSet(a2)
         then:
-        assert f2.matches(f1)
+        assert attributeSet.matches(selector)
     }
+
+  def "when multiple attributes are specified it should examine all"() {
+    given:
+    // Naming is important here as it controls the hashed order
+    Attribute a2 = new Attribute("key2", "value2")
+    Attribute a3 = new Attribute("key3", "", AttributeType.EXISTS)
+    when:
+    AttributeSet attributeSet = new AttributeSet(a2)
+    AttributeSet selectorWithOne = new AttributeSet(a2)
+    AttributeSet selectorWithTwo = new AttributeSet(a2, a3);
+    then:
+
+    // Assert that the order is suitable for testing. The failing attribute should
+    // be in the *second* position to ensure we're examining all the values of the selector
+    assert new ArrayList<>(selectorWithTwo.attributes.values()).indexOf(a3) == 1;
+
+    assert attributeSet.matches(selectorWithOne)
+    assert !attributeSet.matches(selectorWithTwo)
+  }
 }

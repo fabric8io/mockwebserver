@@ -4,7 +4,7 @@
 #### Bugs
 
 #### Improvements
-
+* AttributeSet now examines all attributes when determining if another AttributeSet matches.
 #### Dependency Upgrade
 
 #### New Feature
