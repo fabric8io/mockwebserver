@@ -6,7 +6,7 @@
 #### Dependency Upgrade
 #### New Feature
 
-### 0.1.8
+### 0.1.8 (2020-04-14)
 #### Bugs
 #### Improvements
 #### Dependency Upgrade
@@ -14,7 +14,7 @@
 
 #### New Feature
 
-### 0.1.7
+### 0.1.7 (2019-09-27)
 #### Bugs
 
 #### Improvements
