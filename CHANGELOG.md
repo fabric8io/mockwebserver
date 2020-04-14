@@ -6,6 +6,7 @@
 #### Improvements
 * AttributeSet now examines all attributes when determining if another AttributeSet matches.
 #### Dependency Upgrade
+* Updated OkHttpClient to version 3.12.6
 
 #### New Feature
 
