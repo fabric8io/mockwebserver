@@ -1,12 +1,25 @@
 ## CHANGELOG
 
-### 0.1.7-SNAPSHOT
+### 0.1.9-SNAPSHOT
+#### Bugs
+#### Improvements
+#### Dependency Upgrade
+#### New Feature
+
+### 0.1.8
+#### Bugs
+#### Improvements
+#### Dependency Upgrade
+* Updated OkHttpClient to version 3.12.6
+
+#### New Feature
+
+### 0.1.7
 #### Bugs
 
 #### Improvements
 * AttributeSet now examines all attributes when determining if another AttributeSet matches.
 #### Dependency Upgrade
-* Updated OkHttpClient to version 3.12.6
 
 #### New Feature
 
