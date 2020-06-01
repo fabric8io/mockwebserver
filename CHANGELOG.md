@@ -2,8 +2,12 @@
 
 ### 0.1.9-SNAPSHOT
 #### Bugs
+* Fix: Sundrio is a compile dependency, changed to provided.
 #### Improvements
 #### Dependency Upgrade
+* Updated OkHttpClient to version 3.12.12
+* Updated Jackson to version 2.10.4
+* Updated Sundrio to version 0.21.0
 #### New Feature
 
 ### 0.1.8 (2020-04-14)
