@@ -188,7 +188,7 @@ class DefaultMockServerTest extends Specification {
         closed.await(10, TimeUnit.SECONDS)
     }
 
-    def "when setting a request/response websocket message it should be fired when the event is triggered"() {
+    def "when setting a request or response websocket message it should be fired when the event is triggered"() {
         given:
         CountDownLatch opened = new CountDownLatch(1)
         CountDownLatch closed = new CountDownLatch(1)
@@ -416,7 +416,7 @@ class DefaultMockServerTest extends Specification {
         }
     }
 
-    def "when setting an httprequest/response websocket message it should be fired when the event is triggered"() {
+    def "when setting an httprequest or response websocket message it should be fired when the event is triggered"() {
         given:
         CountDownLatch opened = new CountDownLatch(1)
         CountDownLatch closed = new CountDownLatch(1)
@@ -491,7 +491,7 @@ class DefaultMockServerTest extends Specification {
         closed.await(10, TimeUnit.SECONDS)
     }
 
-    def "when setting an sentWebSocketMessage/response websocket message it should be fired when the event is triggered"() {
+    def "when setting an sentWebSocketMessage or response websocket message it should be fired when the event is triggered"() {
         given:
         CountDownLatch opened = new CountDownLatch(1)
         CountDownLatch closed = new CountDownLatch(1)
