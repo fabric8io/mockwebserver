@@ -101,6 +101,10 @@ public class AttributeSet {
         return attributes != null ? attributes.hashCode() : 0;
     }
 
+    public Attribute getAttribute(String key) {
+        return attributes.get(new Key(key));
+    }
+
     @Override
     public String toString() {
         return "{" +
