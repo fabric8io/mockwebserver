@@ -106,13 +106,6 @@
     </dependency>
 
     <dependency>
-      <groupId>io.sundr</groupId>
-      <artifactId>builder-annotations</artifactId>
-      <version>${sundrio.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <version>${groovy.version}</version>
