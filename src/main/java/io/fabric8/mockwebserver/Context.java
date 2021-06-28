@@ -17,7 +17,6 @@
 package io.fabric8.mockwebserver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.sundr.builder.annotations.Buildable;
 
 public class Context {
 
@@ -27,7 +26,6 @@ public class Context {
         this(new ObjectMapper());
     }
 
-    @Buildable(builderPackage = "io.fabric8.mockwebserver.builder", generateBuilderPackage = true)
     public Context(ObjectMapper mapper) {
         this.mapper = mapper;
     }
