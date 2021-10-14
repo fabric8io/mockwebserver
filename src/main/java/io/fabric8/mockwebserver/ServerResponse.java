@@ -23,8 +23,5 @@ public interface ServerResponse {
 
     boolean isRepeatable();
 
-    @Deprecated
-    MockResponse toMockResponse();
-
     MockResponse toMockResponse(RecordedRequest recordedRequest);
 }
