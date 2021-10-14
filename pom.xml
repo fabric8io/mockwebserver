@@ -73,17 +73,12 @@
 
     <!-- Dependencies -->
     <okhttp.version>3.12.12</okhttp.version>
-    <jackson.version>2.10.4</jackson.version>
-    <sundrio.version>0.21.0</sundrio.version>
+    <jackson.version>2.13.0</jackson.version>
     <zjsonpatch.version>0.3.0</zjsonpatch.version>
 
     <!-- For Testing -->
-    <groovy.version>2.4.4</groovy.version>
-    <spock.version>1.0-groovy-2.4</spock.version>
-    <gmavenplus-plugin.version>1.2</gmavenplus-plugin.version>
-
-    <spotbugs.version>4.0.3</spotbugs.version>
-    <spotbugs-plugin.version>4.0.0</spotbugs-plugin.version>
+    <spock.version>2.0-groovy-3.0</spock.version>
+    <gmavenplus-plugin.version>1.13.0</gmavenplus-plugin.version>
   </properties>
 
   <dependencies>
@@ -103,13 +98,6 @@
       <groupId>io.fabric8</groupId>
       <artifactId>zjsonpatch</artifactId>
       <version>${zjsonpatch.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
-      <version>${groovy.version}</version>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -143,7 +131,6 @@
         <artifactId>maven-gpg-plugin</artifactId>
         <version>1.6</version>
         <configuration>
-          <passphrase>4uds0n</passphrase>
           <useAgent>true</useAgent>
         </configuration>
       </plugin>
@@ -172,7 +159,9 @@
         <executions>
           <execution>
             <goals>
-              <goal>testCompile</goal>
+              <goal>addSources</goal>
+              <goal>addTestSources</goal>
+              <goal>compileTests</goal>
             </goals>
           </execution>
         </executions>
