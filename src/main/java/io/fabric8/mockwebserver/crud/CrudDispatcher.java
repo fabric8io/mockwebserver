@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CrudDispatcher extends Dispatcher {
+public class CrudDispatcher<T> extends Dispatcher {
 
     private static final String POST = "POST";
     private static final String PUT = "PUT";
@@ -23,17 +23,17 @@ public class CrudDispatcher extends Dispatcher {
     protected Map<AttributeSet, String> map = new HashMap<>();
 
     protected final Context context;
-    protected final AttributeExtractor attributeExtractor;
+    protected final AttributeExtractor<T> attributeExtractor;
     protected final ResponseComposer responseComposer;
 
-    public CrudDispatcher(Context context, AttributeExtractor attributeExtractor, ResponseComposer responseComposer) {
+    public CrudDispatcher(Context context, AttributeExtractor<T> attributeExtractor, ResponseComposer responseComposer) {
         this.context = context;
         this.attributeExtractor = attributeExtractor;
         this.responseComposer = responseComposer;
     }
 
     @Override
-    public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+    public MockResponse dispatch(RecordedRequest request) {
         String path = request.getPath();
         String method = request.getMethod();
 
@@ -139,7 +139,7 @@ public class CrudDispatcher extends Dispatcher {
     public MockResponse handleDelete(String path) {
         MockResponse response = new MockResponse();
         List<AttributeSet> items = new ArrayList<>();
-        AttributeSet query = attributeExtractor.extract(path);
+        AttributeSet query = attributeExtractor.fromPath(path);
 
         for (Map.Entry<AttributeSet, String> entry : map.entrySet()) {
             if (entry.getKey().matches(query)) {
@@ -161,7 +161,7 @@ public class CrudDispatcher extends Dispatcher {
         return map;
     }
 
-    public AttributeExtractor getAttributeExtractor() {
+    public AttributeExtractor<T> getAttributeExtractor() {
         return attributeExtractor;
     }
 
@@ -172,7 +172,7 @@ public class CrudDispatcher extends Dispatcher {
 
     private String doGet(String path) {
         List<String> items = new ArrayList<>();
-        AttributeSet query = attributeExtractor.extract(path);
+        AttributeSet query = attributeExtractor.fromPath(path);
         for (Map.Entry<AttributeSet, String> entry : map.entrySet()) {
             if (entry.getKey().matches(query)) {
                 items.add(entry.getValue());

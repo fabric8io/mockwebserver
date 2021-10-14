@@ -58,11 +58,7 @@ public class ChunkedResponse implements ServerResponse {
         return bodyProvider;
     }
 
-    @Deprecated
-    public MockResponse toMockResponse() {
-        return toMockResponse(null);
-    }
-
+    @Override
     public MockResponse toMockResponse(RecordedRequest request) {
         MockResponse mockResponse = new MockResponse();
         mockResponse.setHeaders(bodyProvider.getHeaders());
@@ -84,6 +80,7 @@ public class ChunkedResponse implements ServerResponse {
         return sb.toString();
     }
 
+    @Override
     public boolean isRepeatable() {
         return repeatable;
     }

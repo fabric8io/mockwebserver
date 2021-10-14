@@ -4,10 +4,10 @@ public class Value {
 
     private static final String ANY = "*";
 
-    private final String value;
+    private final String val;
 
     public Value(String value) {
-        this.value = value;
+        this.val = value;
     }
 
     @Override
@@ -20,25 +20,25 @@ public class Value {
             return false;
         }
 
-        if (ANY.equals(value)) {
+        if (ANY.equals(val)) {
             return true;
         }
 
         Value key = (Value) o;
 
-        if (ANY.equals(key.value)) {
+        if (ANY.equals(key.val)) {
             return true;
         }
-        return value != null ? value.equals(key.value) : key.value == null;
+        return val != null ? val.equals(key.val) : key.val == null;
     }
 
     @Override
     public int hashCode() {
-        return value != null ? value.hashCode() : 0;
+        return val != null ? val.hashCode() : 0;
     }
 
     @Override
     public String toString() {
-        return value;
+        return val;
     }
 }

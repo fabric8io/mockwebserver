@@ -35,7 +35,6 @@ import io.fabric8.mockwebserver.dsl.MockServerExpectation;
 import io.fabric8.mockwebserver.dsl.Pathable;
 import io.fabric8.mockwebserver.dsl.ReturnOrWebsocketable;
 import io.fabric8.mockwebserver.dsl.TimesOnceableOrHttpHeaderable;
-import io.fabric8.mockwebserver.dsl.TimesOrOnceable;
 import io.fabric8.mockwebserver.dsl.WebSocketSessionBuilder;
 import io.fabric8.mockwebserver.utils.BodyProvider;
 import io.fabric8.mockwebserver.utils.ResponseProvider;
@@ -127,12 +126,6 @@ public class MockServerExpectationImpl implements MockServerExpectation {
   @Override
   public TimesOnceableOrHttpHeaderable<Void> andReply(ResponseProvider<Object> content) {
     return new MockServerExpectationImpl(context, method, path, toString(content), chunksProvider, delay, delayUnit, times, responses);
-  }
-
-  @Override
-  @Deprecated
-  public TimesOnceableOrHttpHeaderable<Void> andReturnChucked(int statusCode, Object... contents) {
-    return andReturnChunked(statusCode, contents);
   }
 
   @Override

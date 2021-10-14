@@ -52,16 +52,6 @@ class CrudDispatcherTest extends Specification {
         AttributeSet fromResource(String resource) {
             return null
         }
-
-        @Override
-        AttributeSet extract(String path) {
-            return fromPath(path)
-        }
-
-        @Override
-        AttributeSet extract(Object object) {
-            return fromResource(object)
-        }
     }
 
     ResponseComposer composer = new ResponseComposer() {

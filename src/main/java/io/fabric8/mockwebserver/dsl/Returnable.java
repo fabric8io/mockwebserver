@@ -20,9 +20,6 @@ public interface Returnable<T> {
 
   T andReturn(int statusCode, Object content);
 
-  @Deprecated
-  T andReturnChucked(int statusCode, Object... content);
-
   T andReturnChunked(int statusCode, Object... content);
 
 }

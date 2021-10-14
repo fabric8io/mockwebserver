@@ -8,13 +8,12 @@ public class Attribute {
     private final Value value;
     private final AttributeType type;
 
-
     public Attribute(Key key, Value value, AttributeType type) {
-    	this.key = key;
-    	this.value = value;
-    	this.type = type;
+        this.key = key;
+        this.value = value;
+        this.type = type;
     }
-    
+
     public Attribute(String key, String value, AttributeType type) {
     	this(new Key(key), new Value(value), type);
     }
@@ -24,9 +23,8 @@ public class Attribute {
     }
 
     public Attribute(String key, String value) {
-    	this(new Key(key), new Value(value));
+        this(new Key(key), new Value(value));
     }
-    
 
     public Key getKey() {
         return key;
