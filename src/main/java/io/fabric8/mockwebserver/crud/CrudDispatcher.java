@@ -23,8 +23,9 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class CrudDispatcher extends Dispatcher {
     private static final String GET = "GET";
     private static final String DELETE = "DELETE";
 
-    protected final Map<AttributeSet, String> map = new HashMap<>();
+    protected final Map<AttributeSet, String> map = new LinkedHashMap<>();
 
     protected final Context context;
     protected final AttributeExtractor attributeExtractor;
@@ -51,9 +52,7 @@ public class CrudDispatcher extends Dispatcher {
     @Override
     public MockResponse dispatch(RecordedRequest request) {
         String path = request.getPath();
-        String method = request.getMethod();
-
-        switch (method.toUpperCase()) {
+        switch (request.getMethod().toUpperCase()) {
             case POST:
                 return handleCreate(path, request.getBody().readUtf8());
             case PUT:
@@ -124,7 +123,12 @@ public class CrudDispatcher extends Dispatcher {
      * @return a MockResponse to be dispatched.
      */
     public MockResponse handleUpdate(String path, String body) {
-        return handleCreate(path, body);
+        final String currentItem = doGet(path);
+        final MockResponse response = handleCreate(path, body);
+        if (currentItem == null) {
+            response.setResponseCode(HttpURLConnection.HTTP_CREATED);
+        }
+        return response;
     }
 
     /**
