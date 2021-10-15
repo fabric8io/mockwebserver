@@ -32,13 +32,17 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class DefaultMockServer {
+public class DefaultMockServer implements MockServer {
 
   private final Context context;
   private final boolean useHttps;
   private final MockWebServer server;
   private final Map<ServerRequest, Queue<ServerResponse>> responses;
+  private final AtomicInteger lastRequestCount;
+  private final AtomicReference<RecordedRequest> lastRequest;
 
   private final AtomicBoolean initialized = new AtomicBoolean();
   private final AtomicBoolean shutdown = new AtomicBoolean();
@@ -56,11 +60,7 @@ public class DefaultMockServer {
   }
 
   public DefaultMockServer(Context context, MockWebServer server, Map<ServerRequest, Queue<ServerResponse>> responses, boolean useHttps) {
-    this.context = context;
-    this.useHttps = useHttps;
-    this.server = server;
-    this.responses = responses;
-    this.server.setDispatcher(new MockDispatcher(responses));
+    this(context, server, responses, new MockDispatcher(responses), useHttps);
   }
 
   public DefaultMockServer(Context context, MockWebServer server, Map<ServerRequest, Queue<ServerResponse>> responses, Dispatcher dispatcher, boolean useHttps) {
@@ -68,19 +68,9 @@ public class DefaultMockServer {
     this.useHttps = useHttps;
     this.server = server;
     this.responses = responses;
+    this.lastRequest = new AtomicReference<>();
+    this.lastRequestCount = new AtomicInteger(0);
     this.server.setDispatcher(dispatcher);
-  }
-
-  /**
-   * This method is called right before start. Override it to add extra initialization.
-   */
-  public void onStart() {
-  }
-
-  /**
-   * This method is called right after shutdown. Override it to add extra cleanup.
-   */
-  public void onShutdown() {
   }
 
 
@@ -99,7 +89,7 @@ public class DefaultMockServer {
     }
   }
 
-  public void start()  {
+  public final void start()  {
     try {
       startInternal();
       server.start();
@@ -108,7 +98,7 @@ public class DefaultMockServer {
     }
   }
 
-  public void start(int port)  {
+  public final void start(int port)  {
     try {
       startInternal();
       server.start(port);
@@ -117,7 +107,7 @@ public class DefaultMockServer {
     }
   }
 
-  public void start(InetAddress inetAddress, int port) {
+  public final void start(InetAddress inetAddress, int port) {
     try {
       startInternal();
       server.start(inetAddress, port);
@@ -126,7 +116,7 @@ public class DefaultMockServer {
     }
   }
 
-  public void shutdown() {
+  public final void shutdown() {
     try {
       server.shutdown();
     } catch (IOException e) {
@@ -136,45 +126,83 @@ public class DefaultMockServer {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public String url(String path) {
     return server.url(path).toString();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public int getPort() {
     return server.getPort();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public String getHostName() {
     return server.getHostName();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public Proxy toProxyAddress() {
     return server.toProxyAddress();
   }
-
-  public int getRequestCount() {
-    return server.getRequestCount();
-  }
-
-
   /**
-   * This method was only intended to be used just for getting the host and port, which are now exposed directly from this class.
-   * @return
-     */
-  @Deprecated
-  public MockWebServer getServer() {
-    return server;
-  }
-
+   * {@inheritDoc}
+   */
+  @Override
   public MockServerExpectation expect() {
     return new MockServerExpectationImpl(responses, context);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int getRequestCount() {
+    return server.getRequestCount();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public RecordedRequest takeRequest() throws InterruptedException {
     return server.takeRequest();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public RecordedRequest takeRequest(long timeout, TimeUnit unit) throws InterruptedException {
     return server.takeRequest(timeout, unit);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public synchronized RecordedRequest getLastRequest() throws InterruptedException {
+    if (lastRequest.get() != null && getRequestCount() == lastRequestCount.get()) {
+      return lastRequest.get();
+    }
+    int requestCount = getRequestCount() - lastRequestCount.getAndSet(getRequestCount());
+    RecordedRequest latestRequest = null;
+    while (requestCount-- > 0) {
+      latestRequest = takeRequest();
+    }
+    lastRequest.set(latestRequest);
+    return latestRequest;
   }
 }
