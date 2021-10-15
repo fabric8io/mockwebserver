@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.fabric8.mockwebserver.Context;
 import io.fabric8.mockwebserver.ServerRequest;
@@ -175,94 +177,12 @@ public class MockServerExpectationImpl implements MockServerExpectation {
 
   @Override
   public WebSocketSessionBuilder<TimesOnceableOrHttpHeaderable<Void>> andUpgradeToWebSocket() {
-    return new InlineWebSocketSessionBuilder<>(context, new Function<WebSocketSession, TimesOnceableOrHttpHeaderable<Void>>() {
-      @Override
-      public TimesOnceableOrHttpHeaderable<Void> apply(final WebSocketSession webSocketSession) {
-        final Map<String, String> headers = new HashMap<>();
-        headers.put("Upgrade", "websocket");
-        headers.put("Connection", "Upgrade");
-
-        return new TimesOnceableOrHttpHeaderable<Void>() {
-          @Override
-          public Void always() {
-            enqueue(new SimpleRequest(method, path), new SimpleResponse(true, ResponseProviders.of(101, "", headers) , webSocketSession));
-            return null;//Void
-          }
-
-          @Override
-          public Void once() {
-            enqueue(new SimpleRequest(method, path), new SimpleResponse(false, ResponseProviders.of(101, "", headers), webSocketSession));
-            return null;//Void
-          }
-
-          @Override
-          public Void times(int times) {
-            for (int i = 0; i < times; i++) {
-              once();
-            }
-            return null;//Void
-          }
-
-          @Override
-          public TimesOnceableOrHttpHeaderable<Void> withHeader(String header) {
-            headers.put(header, "");
-            return this;//Void
-          }
-
-          @Override
-          public TimesOnceableOrHttpHeaderable<Void> withHeader(String name, String value) {
-            headers.put(name, value);
-            return this;//Void
-          }
-        };
-      }
-    });
+    return new InlineWebSocketSessionBuilder<>(context, new WebSocketSessionConverter(this));
   }
 
   @Override
   public WebSocketSessionBuilder<TimesOnceableOrHttpHeaderable<Void>> andUpgradeToWebSocket(ScheduledExecutorService executor) {
-    return new InlineWebSocketSessionBuilder<>(context, executor, new Function<WebSocketSession, TimesOnceableOrHttpHeaderable<Void>>() {
-      @Override
-      public TimesOnceableOrHttpHeaderable<Void> apply(final WebSocketSession webSocketSession) {
-        final Map<String, String> headers = new HashMap<>();
-        headers.put("Upgrade", "websocket");
-        headers.put("Connection", "Upgrade");
-
-        return new TimesOnceableOrHttpHeaderable<Void>() {
-          @Override
-          public Void always() {
-            enqueue(new SimpleRequest(method, path), new SimpleResponse(true, ResponseProviders.of(101, "", headers) , webSocketSession));
-            return null;//Void
-          }
-
-          @Override
-          public Void once() {
-            enqueue(new SimpleRequest(method, path), new SimpleResponse(false, ResponseProviders.of(101, "", headers), webSocketSession));
-            return null;//Void
-          }
-
-          @Override
-          public Void times(int times) {
-            for (int i = 0; i < times; i++) {
-              once();
-            }
-            return null;//Void
-          }
-
-          @Override
-          public TimesOnceableOrHttpHeaderable<Void> withHeader(String header) {
-            headers.put(header, "");
-            return this;//Void
-          }
-
-          @Override
-          public TimesOnceableOrHttpHeaderable<Void> withHeader(String name, String value) {
-            headers.put(name, value);
-            return this;//Void
-          }
-        };
-      }
-    });
+    return new InlineWebSocketSessionBuilder<>(context, executor, new WebSocketSessionConverter(this));
   }
 
   @Override
@@ -279,12 +199,7 @@ public class MockServerExpectationImpl implements MockServerExpectation {
 
 
   private void enqueue(ServerRequest req, ServerResponse resp) {
-    Queue<ServerResponse> queuedResponses = responses.get(req);
-    if (queuedResponses == null) {
-      queuedResponses = new ArrayDeque<>();
-      responses.put(req, queuedResponses);
-    }
-    queuedResponses.add(resp);
+    responses.computeIfAbsent(req, k -> new ArrayDeque<>()).add(resp);
   }
 
   private ServerResponse createResponse(boolean repeatable, long delay, TimeUnit delayUnit) {
@@ -361,11 +276,60 @@ public class MockServerExpectationImpl implements MockServerExpectation {
     }
   }
 
-  private List<String> toString(Object object[]) {
-    List<String> strings = new ArrayList<>(object.length);
-    for (int i = 0; i < object.length; i++) {
-      strings.add(toString(object[i]));
+  private List<String> toString(Object[] object) {
+    return Stream.of(object)
+      .map(this::toString)
+      .collect(Collectors.toList());
+  }
+
+  private static final class WebSocketSessionConverter
+    implements Function<WebSocketSession, TimesOnceableOrHttpHeaderable<Void>> {
+
+    private final MockServerExpectationImpl mse;
+
+    public WebSocketSessionConverter(MockServerExpectationImpl mse) {
+      this.mse = mse;
     }
-    return strings;
+
+    @Override
+    public TimesOnceableOrHttpHeaderable<Void> apply(final WebSocketSession webSocketSession) {
+      final Map<String, String> headers = new HashMap<>();
+      headers.put("Upgrade", "websocket");
+      headers.put("Connection", "Upgrade");
+
+      return new TimesOnceableOrHttpHeaderable<Void>() {
+        @Override
+        public Void always() {
+          mse.enqueue(new SimpleRequest(mse.method, mse.path), new SimpleResponse(true, ResponseProviders.of(101, "", headers), webSocketSession));
+          return null;//Void
+        }
+
+        @Override
+        public Void once() {
+          mse.enqueue(new SimpleRequest(mse.method, mse.path), new SimpleResponse(false, ResponseProviders.of(101, "", headers), webSocketSession));
+          return null;//Void
+        }
+
+        @Override
+        public Void times(int times) {
+          for (int i = 0; i < times; i++) {
+            once();
+          }
+          return null;//Void
+        }
+
+        @Override
+        public TimesOnceableOrHttpHeaderable<Void> withHeader(String header) {
+          headers.put(header, "");
+          return this;//Void
+        }
+
+        @Override
+        public TimesOnceableOrHttpHeaderable<Void> withHeader(String name, String value) {
+          headers.put(name, value);
+          return this;//Void
+        }
+      };
+    }
   }
 }

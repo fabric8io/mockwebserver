@@ -1,5 +1,7 @@
 package io.fabric8.mockwebserver.crud;
 
+import java.util.Objects;
+
 public class Key {
 
     private final String name;
@@ -10,22 +12,15 @@ public class Key {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Key key = (Key) o;
-
-        return name != null ? name.equals(key.name) : key.name == null;
+        return Objects.equals(name, key.name);
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        return Objects.hash(name);
     }
 
     @Override

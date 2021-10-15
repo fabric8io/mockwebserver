@@ -44,11 +44,11 @@ public class DefaultMockServer {
   private final AtomicBoolean shutdown = new AtomicBoolean();
 
   public DefaultMockServer() {
-    this(new Context(), new MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), false);
+    this(new Context(), new MockWebServer(), new HashMap<>(), false);
   }
 
   public DefaultMockServer(boolean useHttps) {
-    this(new Context(), new MockWebServer(), new HashMap<ServerRequest, Queue<ServerResponse>>(), useHttps);
+    this(new Context(), new MockWebServer(), new HashMap<>(), useHttps);
   }
 
   public DefaultMockServer(MockWebServer server, Map<ServerRequest, Queue<ServerResponse>> responses, boolean useHttps) {
@@ -81,7 +81,6 @@ public class DefaultMockServer {
    * This method is called right after shutdown. Override it to add extra cleanup.
    */
   public void onShutdown() {
-
   }
 
 

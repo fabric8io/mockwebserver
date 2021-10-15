@@ -160,29 +160,24 @@ public class WebSocketSession extends WebSocketListener {
         if (requestEvents.isEmpty() && httpRequestEvents.isEmpty() && sentWebSocketMessagesRequestEvents.isEmpty()) {
             try {
                 executor.shutdown();
-                if (executor.awaitTermination(1, TimeUnit.MINUTES)) {
-                    webSocketRef.get().close(1000, "Closing...");
-                } else {
+                if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
                     executor.shutdownNow();
-                    webSocketRef.get().close(1000, "Closing...");
                 }
-            } catch (Throwable t) {
-                throw new RuntimeException(t);
+                webSocketRef.get().close(1000, "Closing...");
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
             }
         }
     }
 
     private void send(final WebSocketMessage message) {
-        executor.schedule(new Runnable() {
-            @Override
-            public void run() {
-                WebSocket ws = webSocketRef.get();
-                if (ws != null) {
-                    if (message.isBinary()) {
-                        ws.send(ByteString.of(message.getBytes()));
-                    } else {
-                        ws.send(message.getBody());
-                    }
+        executor.schedule(() -> {
+            WebSocket ws = webSocketRef.get();
+            if (ws != null) {
+                if (message.isBinary()) {
+                    ws.send(ByteString.of(message.getBytes()));
+                } else {
+                    ws.send(message.getBody());
                 }
             }
         }, message.getDelay(), TimeUnit.MILLISECONDS);

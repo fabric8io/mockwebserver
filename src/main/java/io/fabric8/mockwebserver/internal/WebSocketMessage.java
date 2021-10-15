@@ -15,7 +15,6 @@
  */
 package io.fabric8.mockwebserver.internal;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class WebSocketMessage {

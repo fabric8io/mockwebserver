@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CrudDispatcher<T> extends Dispatcher {
+public class CrudDispatcher extends Dispatcher {
 
     private static final String POST = "POST";
     private static final String PUT = "PUT";
@@ -20,13 +20,13 @@ public class CrudDispatcher<T> extends Dispatcher {
     private static final String GET = "GET";
     private static final String DELETE = "DELETE";
 
-    protected Map<AttributeSet, String> map = new HashMap<>();
+    protected final Map<AttributeSet, String> map = new HashMap<>();
 
     protected final Context context;
-    protected final AttributeExtractor<T> attributeExtractor;
+    protected final AttributeExtractor attributeExtractor;
     protected final ResponseComposer responseComposer;
 
-    public CrudDispatcher(Context context, AttributeExtractor<T> attributeExtractor, ResponseComposer responseComposer) {
+    public CrudDispatcher(Context context, AttributeExtractor attributeExtractor, ResponseComposer responseComposer) {
         this.context = context;
         this.attributeExtractor = attributeExtractor;
         this.responseComposer = responseComposer;
@@ -55,15 +55,15 @@ public class CrudDispatcher<T> extends Dispatcher {
     /**
      * Adds the specified object to the in-memory db.
      *
-     * @param path
-     * @param s
-     * @return
+     * @param path for the request.
+     * @param body Request body as String (UTF-8).
+     * @return a MockResponse to be dispatched.
      */
-    public MockResponse handleCreate(String path, String s) {
+    public MockResponse handleCreate(String path, String body) {
         MockResponse response = new MockResponse();
-        AttributeSet features = AttributeSet.merge(attributeExtractor.fromPath(path), attributeExtractor.fromResource(s));
-        map.put(features, s);
-        response.setBody(s);
+        AttributeSet features = AttributeSet.merge(attributeExtractor.fromPath(path), attributeExtractor.fromResource(body));
+        map.put(features, body);
+        response.setBody(body);
         response.setResponseCode(202);
         return response;
     }
@@ -71,19 +71,19 @@ public class CrudDispatcher<T> extends Dispatcher {
     /**
      * Patches the specified object to the in-memory db.
      *
-     * @param path
-     * @param s
-     * @return
+     * @param path for the request.
+     * @param body Request body as String (UTF-8).
+     * @return a MockResponse to be dispatched.
      */
-    public MockResponse handlePatch(String path, String s) {
+    public MockResponse handlePatch(String path, String body) {
         MockResponse response = new MockResponse();
-        String body = doGet(path);
-        if (body == null) {
+        String existingObjectBody = doGet(path);
+        if (existingObjectBody == null) {
             response.setResponseCode(404);
         } else {
             try {
-                JsonNode patch = context.getMapper().readTree(s);
-                JsonNode source = context.getMapper().readTree(body);
+                JsonNode patch = context.getMapper().readTree(body);
+                JsonNode source = context.getMapper().readTree(existingObjectBody);
                 JsonNode updated = JsonPatch.apply(patch, source);
                 String updatedAsString = context.getMapper().writeValueAsString(updated);
                 AttributeSet features = AttributeSet.merge(attributeExtractor.fromPath(path),
@@ -102,19 +102,19 @@ public class CrudDispatcher<T> extends Dispatcher {
     /**
      * Updates the specified object to the in-memory db.
      *
-     * @param path
-     * @param s
-     * @return
+     * @param path for the request.
+     * @param body Request body as String (UTF-8).
+     * @return a MockResponse to be dispatched.
      */
-    public MockResponse handleUpdate(String path, String s) {
-        return handleCreate(path, s);
+    public MockResponse handleUpdate(String path, String body) {
+        return handleCreate(path, body);
     }
 
     /**
      * Performs a get for the corresponding object from the in-memory db.
      *
-     * @param path The path.
-     * @return The {@link MockResponse}
+     * @param path for the request.
+     * @return a MockResponse to be dispatched.
      */
     public MockResponse handleGet(String path) {
         MockResponse response = new MockResponse();
@@ -133,8 +133,8 @@ public class CrudDispatcher<T> extends Dispatcher {
     /**
      * Performs a delete for the corresponding object from the in-memory db.
      *
-     * @param path
-     * @return
+     * @param path for the request.
+     * @return a MockResponse to be dispatched.
      */
     public MockResponse handleDelete(String path) {
         MockResponse response = new MockResponse();
@@ -161,7 +161,7 @@ public class CrudDispatcher<T> extends Dispatcher {
         return map;
     }
 
-    public AttributeExtractor<T> getAttributeExtractor() {
+    public AttributeExtractor getAttributeExtractor() {
         return attributeExtractor;
     }
 

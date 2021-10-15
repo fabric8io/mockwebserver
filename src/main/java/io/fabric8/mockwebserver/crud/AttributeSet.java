@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class AttributeSet {
 
@@ -37,7 +38,7 @@ public class AttributeSet {
     }
 
     public AttributeSet(Collection<Attribute> attributes) {
-        this(AttributeSet.map(attributes.toArray(new Attribute[attributes.size()])).attributes);
+        this(AttributeSet.map(attributes.toArray(new Attribute[0])).attributes);
     }
 
     public AttributeSet(Map<Key, Attribute> attributes) {
@@ -90,15 +91,13 @@ public class AttributeSet {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         AttributeSet that = (AttributeSet) o;
-
-        return attributes != null ? attributes.equals(that.attributes) : that.attributes == null;
+        return Objects.equals(attributes, that.attributes);
     }
 
     @Override
     public int hashCode() {
-        return attributes != null ? attributes.hashCode() : 0;
+        return Objects.hash(attributes);
     }
 
     public Attribute getAttribute(String key) {

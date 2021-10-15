@@ -16,6 +16,7 @@
 
 package io.fabric8.mockwebserver.internal;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.fabric8.mockwebserver.ServerResponse;
@@ -90,21 +91,12 @@ public class SimpleResponse implements ServerResponse {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
     SimpleResponse that = (SimpleResponse) o;
-
-    if (repeatable != that.repeatable) return false;
-    if (bodyProvider != null ? !bodyProvider.equals(that.bodyProvider) : that.bodyProvider != null) return false;
-    return webSocketSession != null ? webSocketSession.equals(that.webSocketSession) : that.webSocketSession == null;
-
+    return repeatable == that.repeatable && responseDelay == that.responseDelay && Objects.equals(bodyProvider, that.bodyProvider) && Objects.equals(webSocketSession, that.webSocketSession) && responseDelayUnit == that.responseDelayUnit;
   }
 
   @Override
   public int hashCode() {
-    int result = bodyProvider != null ? bodyProvider.hashCode() : 0;
-    result = 31 * result + (webSocketSession != null ? webSocketSession.hashCode() : 0);
-    result = 31 * result + (repeatable ? 1 : 0);
-    return result;
+    return Objects.hash(bodyProvider, webSocketSession, repeatable, responseDelay, responseDelayUnit);
   }
-
 }
