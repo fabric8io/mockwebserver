@@ -39,8 +39,9 @@ public class CrudDispatcher extends Dispatcher {
 
         switch (method.toUpperCase()) {
             case POST:
-            case PUT:
                 return handleCreate(path, request.getBody().readUtf8());
+            case PUT:
+                return handleUpdate(path, request.getBody().readUtf8());
             case PATCH:
                 return handlePatch(path, request.getBody().readUtf8());
             case GET:
