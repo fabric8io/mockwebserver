@@ -23,6 +23,9 @@ jobs:
     steps:
     - checkout
     - run:
+        name: License check
+        command: mvn -N license:check
+    - run:
         command: |
           mvn clean install
     - save_cache:
