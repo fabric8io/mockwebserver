@@ -43,6 +43,121 @@ class DefaultMockServerTest extends Specification {
         server.shutdown()
     }
 
+    def "getPort, should return a valid port"() {
+        when:
+        def result = server.getPort()
+
+        then:
+        assert result > 0
+        assert result <= 65535
+    }
+
+    def "getHostName, should return a valid host name"() {
+        when:
+        def result = server.getHostName()
+
+        then:
+        assert !result.isBlank()
+    }
+
+    def "toProxy, should return Proxy with the current HostName and Port"() {
+        when:
+        def result = server.toProxyAddress()
+
+        then:
+        assert result.address() instanceof InetSocketAddress
+        assert ((InetSocketAddress)result.address()).getPort() == server.getPort()
+        assert ((InetSocketAddress)result.address()).getHostName() == server.getHostName()
+    }
+
+    def "getRequestCount, with no requests, should return 0"() {
+        when:
+        def result = server.getRequestCount()
+
+        then:
+        assert result == 0
+    }
+
+    def "getRequestCount, with multiple, should return valid request count"() {
+        given:
+        client.newCall(new Request.Builder().url(server.url("/")).get().build()).execute()
+        client.newCall(new Request.Builder().url(server.url("/one")).get().build()).execute()
+        client.newCall(new Request.Builder().url(server.url("/two")).get().build()).execute()
+
+        when:
+        def result = server.getRequestCount()
+
+        then:
+        assert result == 3
+    }
+
+    def "getLastRequest, with no requests, should return null"() {
+        when:
+        def result = server.getLastRequest()
+
+        then:
+        assert result == null
+    }
+
+    def "getLastRequest, with one request, should return the request"() {
+        given:
+        client.newCall(new Request.Builder().url(server.url("/")).get().build()).execute()
+
+        when:
+        def result = server.getLastRequest()
+
+        then:
+        assert result.getPath() == "/"
+    }
+
+    def "getLastRequest, with one request, can be invoked multiple times"() {
+        given:
+        client.newCall(new Request.Builder().url(server.url("/")).get().build()).execute()
+        server.getLastRequest()
+
+        when:
+        def result = server.getLastRequest()
+
+        then:
+        assert result.getPath() == "/"
+    }
+
+    def "getLastRequest, with multiple requests, should return the latest request"() {
+        given:
+        client.newCall(new Request.Builder().url(server.url("/")).get().build()).execute()
+        client.newCall(new Request.Builder().url(server.url("/one")).get().build()).execute()
+        client.newCall(new Request.Builder().url(server.url("/two")).get().build()).execute()
+
+        when:
+        def result = server.getLastRequest()
+
+        then:
+        assert result.getPath() == "/two"
+    }
+
+    def "getLastRequest, with multiple requests, can be invoked multiple times"() {
+        given:
+        client.newCall(new Request.Builder().url(server.url("/")).get().build()).execute()
+        client.newCall(new Request.Builder().url(server.url("/one")).get().build()).execute()
+        server.getLastRequest()
+        client.newCall(new Request.Builder().url(server.url("/two")).get().build()).execute()
+        server.getLastRequest()
+
+        when:
+        def result = server.getLastRequest()
+
+        then:
+        assert result.getPath() == "/two"
+    }
+
+    def "takeRequest, with timeout and no requests, should return null and don't block (after timeout)"() {
+        when:
+        def result = server.takeRequest(1, TimeUnit.MICROSECONDS)
+
+        then:
+        assert result == null
+    }
+
     def "when setting an expectation with once it should be met only the first time"() {
         given:
         server.expect().get().withPath("/api/v1/users").andReturn(200, "admin").once()
@@ -53,14 +168,13 @@ class DefaultMockServerTest extends Specification {
         Response response2 = client.newCall(request).execute()
 
         then:
-        try {
-            assert response1.code() == 200
-            assert response1.body().string() == "admin"
-            assert response2.code() == 404
-        } finally {
-            response1.close()
-            response2.close()
-        }
+        assert response1.code() == 200
+        assert response1.body().string() == "admin"
+        assert response2.code() == 404
+
+        cleanup:
+        response1.close()
+        response2.close()
     }
 
     def "when setting an expectation with n-th times it should be met only the for the first n-th times"() {
@@ -75,23 +189,22 @@ class DefaultMockServerTest extends Specification {
         Response response4 = client.newCall(request).execute()
 
         then:
-        try {
-            assert response1.code() == 200
-            assert response1.body().string() == "admin"
-            assert response2.code() == 200
-            assert response2.body().string() == "admin"
-            assert response3.code() == 200
-            assert response3.body().string() == "admin"
-            assert response4.code() == 404
-        } finally {
-            response1.close()
-            response2.close()
-            response3.close()
-            response4.close()
-        }
+        assert response1.code() == 200
+        assert response1.body().string() == "admin"
+        assert response2.code() == 200
+        assert response2.body().string() == "admin"
+        assert response3.code() == 200
+        assert response3.body().string() == "admin"
+        assert response4.code() == 404
+
+        cleanup:
+        response1.close()
+        response2.close()
+        response3.close()
+        response4.close()
     }
 
-    def "when setting an expectation with alwyas it should be met only alwayas"() {
+    def "when setting an expectation with always it should be met only always"() {
         given:
         server.expect().get().withPath("/api/v1/users").andReturn(200, "admin").always()
 
@@ -103,21 +216,20 @@ class DefaultMockServerTest extends Specification {
         Response response4 = client.newCall(request).execute()
 
         then:
-        try {
-            assert response1.code() == 200
-            assert response1.body().string() == "admin"
-            assert response2.code() == 200
-            assert response2.body().string() == "admin"
-            assert response3.code() == 200
-            assert response3.body().string() == "admin"
-            assert response4.code() == 200
-            assert response4.body().string() == "admin"
-        } finally {
-            response1.close()
-            response2.close()
-            response3.close()
-            response4.close()
-        }
+        assert response1.code() == 200
+        assert response1.body().string() == "admin"
+        assert response2.code() == 200
+        assert response2.body().string() == "admin"
+        assert response3.code() == 200
+        assert response3.body().string() == "admin"
+        assert response4.code() == 200
+        assert response4.body().string() == "admin"
+
+        cleanup:
+        response1.close()
+        response2.close()
+        response3.close()
+        response4.close()
     }
 
     def "when setting an expectation as an object it should be serialized to json"() {
@@ -131,12 +243,11 @@ class DefaultMockServerTest extends Specification {
         Response response1 = client.newCall(request).execute()
 
         then:
-        try {
-            assert response1.code() == 200
-            assert response1.body().string() == "{\"id\":0,\"username\":\"root\",\"enabled\":true}"
-        } finally {
-            response1.close()
-        }
+        assert response1.code() == 200
+        assert response1.body().string() == "{\"id\":0,\"username\":\"root\",\"enabled\":true}"
+
+        cleanup:
+        response1.close()
     }
 
     def "when setting a timed websocket message it should be fire at the specified time"() {
@@ -157,7 +268,7 @@ class DefaultMockServerTest extends Specification {
 
             @Override
             void onClosing(WebSocket webSocket, int code, String reason) {
-                webSocket.close(code, reason);
+                webSocket.close(code, reason)
             }
 
             @Override
@@ -210,12 +321,12 @@ class DefaultMockServerTest extends Specification {
 
             @Override
             void onMessage(WebSocket webSocket, ByteString bytes) {
-                onMessage(webSocket, bytes.utf8());
+                onMessage(webSocket, bytes.utf8())
             }
 
             @Override
             void onClosing(WebSocket webSocket, int code, String reason) {
-                webSocket.close(code, reason);
+                webSocket.close(code, reason)
             }
 
             @Override
@@ -323,13 +434,12 @@ class DefaultMockServerTest extends Specification {
         Response response1 = client.newCall(request).execute()
 
         then:
-        try {
-            assert response1.code() == 200
-            assert response1.body().string() == "admin"
-            assert System.currentTimeMillis() - startTime >= 100
-        } finally {
-            response1.close()
-        }
+        assert response1.code() == 200
+        assert response1.body().string() == "admin"
+        assert System.currentTimeMillis() - startTime >= 100
+
+        cleanup:
+        response1.close()
     }
 
     def "when using a body provider it should work as for static responses"() {
@@ -343,15 +453,14 @@ class DefaultMockServerTest extends Specification {
         Response response2 = client.newCall(request).execute()
 
         then:
-        try {
-            assert response1.code() == 200
-            assert response1.body().string() == "admin0"
-            assert response2.code() == 200
-            assert response2.body().string() == "admin1"
-        } finally {
-            response1.close()
-            response2.close()
-        }
+        assert response1.code() == 200
+        assert response1.body().string() == "admin0"
+        assert response2.code() == 200
+        assert response2.body().string() == "admin1"
+
+        cleanup:
+        response1.close()
+        response2.close()
     }
 
     def "when using a response provider it should work as for static responses"() {
@@ -370,30 +479,29 @@ class DefaultMockServerTest extends Specification {
 
             @Override
             Headers getHeaders() {
-                return headers;
+                return headers
             }
 
             @Override
             void setHeaders(Headers headers) {
-                this.headers = headers;
+                this.headers = headers
             }
         }).always()
 
         when:
-        Request request = new Request.Builder().url(server.url("/api/v1/users")).get().build()
-        Response response1 = client.newCall(request).execute()
-        Response response2 = client.newCall(request).execute()
+        Request req = new Request.Builder().url(server.url("/api/v1/users")).get().build()
+        Response response1 = client.newCall(req).execute()
+        Response response2 = client.newCall(req).execute()
 
         then:
-        try {
-            assert response1.code() == 200
-            assert response1.body().string() == "admin0"
-            assert response2.code() == 201
-            assert response2.body().string() == "admin1"
-        } finally {
-            response1.close()
-            response2.close()
-        }
+        assert response1.code() == 200
+        assert response1.body().string() == "admin0"
+        assert response2.code() == 201
+        assert response2.body().string() == "admin1"
+
+        cleanup:
+        response1.close()
+        response2.close()
     }
 
     def "should be able to set headers on responses"() {
@@ -405,14 +513,13 @@ class DefaultMockServerTest extends Specification {
         Response response = client.newCall(request).execute()
 
         then:
-        try {
-            assert response.code() == 200
-            assert response.body().string() == "admin"
-            assert response.header("test") == "header"
-            assert response.header("test2") == "header2"
-        } finally {
-            response.close()
-        }
+        assert response.code() == 200
+        assert response.body().string() == "admin"
+        assert response.header("test") == "header"
+        assert response.header("test2") == "header2"
+
+        cleanup:
+        response.close()
     }
 
     def "when setting an httprequest/response websocket message it should be fired when the event is triggered"() {
@@ -438,12 +545,12 @@ class DefaultMockServerTest extends Specification {
 
             @Override
             void onMessage(WebSocket webSocket, ByteString bytes) {
-                onMessage(webSocket, bytes.utf8());
+                onMessage(webSocket, bytes.utf8())
             }
 
             @Override
             void onClosing(WebSocket webSocket, int code, String reason) {
-                webSocket.close(code, reason);
+                webSocket.close(code, reason)
             }
 
             @Override
@@ -513,12 +620,12 @@ class DefaultMockServerTest extends Specification {
 
             @Override
             void onMessage(WebSocket webSocket, ByteString bytes) {
-                onMessage(webSocket, bytes.utf8());
+                onMessage(webSocket, bytes.utf8())
             }
 
             @Override
             void onClosing(WebSocket webSocket, int code, String reason) {
-                webSocket.close(code, reason);
+                webSocket.close(code, reason)
             }
 
             @Override
