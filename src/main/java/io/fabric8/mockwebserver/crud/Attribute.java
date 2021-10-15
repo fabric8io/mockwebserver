@@ -1,5 +1,7 @@
 package io.fabric8.mockwebserver.crud;
 
+import java.util.Objects;
+
 import static io.fabric8.mockwebserver.crud.AttributeType.WITH;
 
 public class Attribute {
@@ -38,18 +40,13 @@ public class Attribute {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         Attribute attribute = (Attribute) o;
-
-        if (key != null ? !key.equals(attribute.key) : attribute.key != null) return false;
-        return value != null ? value.equals(attribute.value) : attribute.value == null;
+        return Objects.equals(key, attribute.key) && Objects.equals(value, attribute.value) && type == attribute.type;
     }
 
     @Override
     public int hashCode() {
-        int result = key != null ? key.hashCode() : 0;
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        return result;
+        return Objects.hash(key, value, type);
     }
 
     @Override

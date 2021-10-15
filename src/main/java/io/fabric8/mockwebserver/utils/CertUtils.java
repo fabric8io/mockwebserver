@@ -39,9 +39,11 @@ import java.security.spec.RSAPrivateCrtKeySpec;
 
 public class CertUtils {
 
+    private CertUtils() {}
+
     public static InputStream getInputStreamFromDataOrFile(String data, String file) throws FileNotFoundException {
         if (data != null) {
-            byte[] bytes = null;
+            final byte[] bytes;
             ByteString decoded = ByteString.decodeBase64(data);
             if (decoded != null) {
                 bytes = decoded.toByteArray();
@@ -95,8 +97,7 @@ public class CertUtils {
     // http://oauth.googlecode.com/svn/code/java/
     // All credits to belong to them.
     private static byte[] decodePem(InputStream keyInputStream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(keyInputStream));
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(keyInputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.contains("-----BEGIN ")) {
@@ -104,8 +105,6 @@ public class CertUtils {
                 }
             }
             throw new IOException("PEM is invalid: no begin marker");
-        } finally {
-            reader.close();
         }
     }
 

@@ -16,7 +16,6 @@
 
 package io.fabric8.mockwebserver.internal;
 
-
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -39,7 +38,7 @@ public class MockDispatcher extends Dispatcher {
     }
 
     @Override
-    public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+    public MockResponse dispatch(RecordedRequest request) {
         for (WebSocketSession webSocketSession : webSocketSessions) {
             webSocketSession.dispatch(request);
         }

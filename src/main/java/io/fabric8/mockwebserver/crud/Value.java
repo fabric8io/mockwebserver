@@ -11,6 +11,7 @@ public class Value {
     }
 
     @Override
+    // TODO: There's a BUG here, equals({val: "*"} is true but might have different hashCode
     public boolean equals(Object o) {
         if (this == o) {
             return true;

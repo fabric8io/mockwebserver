@@ -59,9 +59,9 @@ class PKCS1Util {
 
     static class DerParser {
 
-        private InputStream in;
+        private final InputStream in;
 
-        DerParser(byte[] bytes) throws IOException {
+        DerParser(byte[] bytes) {
             this.in = new ByteArrayInputStream(bytes);
         }
 

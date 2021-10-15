@@ -23,7 +23,6 @@ import io.fabric8.mockwebserver.ServerResponse;
 import io.fabric8.mockwebserver.utils.ResponseProvider;
 import io.fabric8.mockwebserver.utils.ResponseProviders;
 
-import okhttp3.Headers;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 
