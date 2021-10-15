@@ -19,6 +19,7 @@ package io.fabric8.mockwebserver.internal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.mockwebserver.Context;
+import io.fabric8.mockwebserver.MockServerException;
 import io.fabric8.mockwebserver.dsl.Emitable;
 import io.fabric8.mockwebserver.dsl.EventDoneable;
 import io.fabric8.mockwebserver.dsl.Function;
@@ -188,7 +189,7 @@ public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder
             try {
                 return toWebSocketMessage(delay, MAPPER.writeValueAsString(content), toBeRemoved);
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new MockServerException("Exception when mapping to WebSocketMessage", e);
             }
         }
     }

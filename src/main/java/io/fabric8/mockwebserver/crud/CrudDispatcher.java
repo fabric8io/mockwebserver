@@ -17,6 +17,7 @@ package io.fabric8.mockwebserver.crud;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.fabric8.mockwebserver.Context;
+import io.fabric8.mockwebserver.MockServerException;
 import io.fabric8.zjsonpatch.JsonPatch;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
@@ -108,7 +109,7 @@ public class CrudDispatcher extends Dispatcher {
                 response.setResponseCode(202);
                 response.setBody(updatedAsString);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MockServerException("Exception when handling CRUD patch", e);
             }
 
         }

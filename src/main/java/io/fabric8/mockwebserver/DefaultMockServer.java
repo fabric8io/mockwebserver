@@ -104,7 +104,7 @@ public class DefaultMockServer {
       startInternal();
       server.start();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new MockServerException("Exception when starting DefaultMockServer", e);
     }
   }
 
@@ -113,7 +113,7 @@ public class DefaultMockServer {
       startInternal();
       server.start(port);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new MockServerException("Exception when starting DefaultMockServer with port", e);
     }
   }
 
@@ -122,7 +122,7 @@ public class DefaultMockServer {
       startInternal();
       server.start(inetAddress, port);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new MockServerException("Exception when starting DefaultMockServer with InetAddress and port", e);
     }
   }
 
@@ -130,7 +130,7 @@ public class DefaultMockServer {
     try {
       server.shutdown();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new MockServerException("Exception when stopping DefaultMockServer", e);
     } finally {
       shutdownInternal();
     }

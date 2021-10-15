@@ -17,12 +17,16 @@
 package io.fabric8.mockwebserver.internal;
 
 
+import io.fabric8.mockwebserver.MockServerException;
 import io.fabric8.mockwebserver.utils.SSLUtils;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 
 public class MockSSLContextFactory {
+
+  private MockSSLContextFactory() {
+  }
 
   public static SSLContext create() {
     try {
@@ -31,7 +35,7 @@ public class MockSSLContextFactory {
         "RSA", "");
       return SSLUtils.sslContext(keyManagers, null, true);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new MockServerException("Exception creating SSLContext", e);
     }
   }
 }
