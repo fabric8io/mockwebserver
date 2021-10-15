@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.fabric8.mockwebserver.Context;
+import io.fabric8.mockwebserver.MockServerException;
 import io.fabric8.mockwebserver.ServerRequest;
 import io.fabric8.mockwebserver.ServerResponse;
 import io.fabric8.mockwebserver.dsl.DelayPathable;
@@ -271,7 +272,7 @@ public class MockServerExpectationImpl implements MockServerExpectation {
       try {
         return context.getMapper().writeValueAsString(object);
       } catch (JsonProcessingException e) {
-        throw new RuntimeException(e);
+        throw new MockServerException("Exception when mapping Object to String", e);
       }
     }
   }

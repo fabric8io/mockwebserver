@@ -16,6 +16,7 @@
 
 package io.fabric8.mockwebserver.internal;
 
+import io.fabric8.mockwebserver.MockServerException;
 import io.fabric8.mockwebserver.dsl.HttpMethod;
 import okhttp3.Response;
 import io.fabric8.mockwebserver.Context;
@@ -165,7 +166,7 @@ public class WebSocketSession extends WebSocketListener {
                 }
                 webSocketRef.get().close(1000, "Closing...");
             } catch (Exception ex) {
-                throw new RuntimeException(ex);
+                throw new MockServerException("Exception when shutting down WebSocketSession", ex);
             }
         }
     }
