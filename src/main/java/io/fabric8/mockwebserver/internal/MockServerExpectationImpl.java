@@ -181,9 +181,12 @@ public class MockServerExpectationImpl implements MockServerExpectation {
     return new InlineWebSocketSessionBuilder<>(context, new WebSocketSessionConverter(this));
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public WebSocketSessionBuilder<TimesOnceableOrHttpHeaderable<Void>> andUpgradeToWebSocket(ScheduledExecutorService executor) {
-    return new InlineWebSocketSessionBuilder<>(context, executor, new WebSocketSessionConverter(this));
+    return new InlineWebSocketSessionBuilder<>(context, new WebSocketSessionConverter(this));
   }
 
   @Override

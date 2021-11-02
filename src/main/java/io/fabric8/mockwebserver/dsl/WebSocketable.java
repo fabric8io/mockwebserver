@@ -22,6 +22,11 @@ public interface WebSocketable<T> {
 
   T andUpgradeToWebSocket();
 
+  /**
+   * @deprecated the provided ScheduledExecutorService is not used, use {@link #andUpgradeToWebSocket()} instead.
+   * The ExecutorService is handled internally by WebSocketSession, external executors are no longer allowed.
+   */
+  @Deprecated
   T andUpgradeToWebSocket(ScheduledExecutorService executor);
 
 }
