@@ -31,40 +31,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder<T>, EventDoneable<T> {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final ScheduledExecutorService executor;
     private final Context context;
     private final Function<WebSocketSession, T> function;
     private WebSocketSession session;
 
-    public InlineWebSocketSessionBuilder(Context context, ScheduledExecutorService executor, Function<WebSocketSession, T> function) {
-        this.context = context;
-        this.function = function;
-        this.executor = executor;
-    }
-
     public InlineWebSocketSessionBuilder(Context context, Function<WebSocketSession, T> function) {
         this.context = context;
         this.function = function;
-        this.executor = Executors.newSingleThreadScheduledExecutor();
     }
 
     @Override
     public EventDoneable<T> open(Object... response) {
-        this.session = new WebSocketSession(context, executor, toWebSocketMessages(response), null, null);
+        this.session = new WebSocketSession(toWebSocketMessages(response), null, null);
         return this;
     }
 
 
     @Override
     public T failure(Object response, Exception e) {
-        return function.apply(new WebSocketSession(context, executor, Collections.emptyList(), toWebSocketMessage(response), e));
+        return function.apply(new WebSocketSession(Collections.emptyList(), toWebSocketMessage(response), e));
     }
 
     @Override
