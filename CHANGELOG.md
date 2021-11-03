@@ -7,7 +7,12 @@
 #### Dependency Upgrade
 #### New Feature
 
-### 0.2.0 (2021-11-01)
+### 0.2.1 (2021-11-03)
+
+#### Bugs
+* Fix #69: regression on Attribute#equals & Attribute#hashCode
+
+### 0.2.0 (2021-11-03)
 
 #### Bugs
 * Fix #66: Removed code smells and bugs
