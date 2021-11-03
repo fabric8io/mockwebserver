@@ -55,11 +55,11 @@ public class CrudDispatcher extends Dispatcher {
         String path = request.getPath();
         switch (request.getMethod().toUpperCase()) {
             case POST:
-                return handleCreate(path, request.getBody().readUtf8());
+                return handleCreate(request);
             case PUT:
-                return handleUpdate(path, request.getBody().readUtf8());
+                return handleUpdate(request);
             case PATCH:
-                return handlePatch(path, request.getBody().readUtf8());
+                return handlePatch(request);
             case GET:
                 return handleGet(path);
             case DELETE:
@@ -67,6 +67,10 @@ public class CrudDispatcher extends Dispatcher {
             default:
                 return null;
         }
+    }
+
+    public MockResponse handleCreate(RecordedRequest request) {
+        return handleCreate(request.getPath(), request.getBody().readUtf8());
     }
 
     /**
@@ -85,6 +89,10 @@ public class CrudDispatcher extends Dispatcher {
         response.setBody(body);
         response.setResponseCode(202);
         return response;
+    }
+
+    public MockResponse handlePatch(RecordedRequest request) {
+        return handlePatch(request.getPath(), request.getBody().readUtf8());
     }
 
     /**
@@ -118,6 +126,10 @@ public class CrudDispatcher extends Dispatcher {
 
         }
         return response;
+    }
+
+    public MockResponse handleUpdate(RecordedRequest request) {
+        return handleUpdate(request.getPath(), request.getBody().readUtf8());
     }
 
     /**
