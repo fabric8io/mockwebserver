@@ -15,7 +15,7 @@
 * Fix #57: Update expired SSL certificates (new expiry date 2031-11-01)
 
 #### Improvements
-* Fix #59: adding a getter to access namespace from the path (fabric8/kubernetes-client#2921)
+* Fix #59: adding a getter to access namespace from the path (fabric8io/kubernetes-client#2921)
 * Fix #66: Added getLastRequest method to MockServer
 * Fix #66: CRUD dispatcher handles PUT independently of POST
 
