@@ -25,6 +25,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class CrudDispatcher extends Dispatcher {
     private static final String GET = "GET";
     private static final String DELETE = "DELETE";
 
-    protected final Map<AttributeSet, String> map = new LinkedHashMap<>();
+    protected final Map<AttributeSet, String> map = Collections.synchronizedMap(new LinkedHashMap<>());
 
     protected final Context context;
     protected final AttributeExtractor attributeExtractor;
@@ -78,7 +79,9 @@ public class CrudDispatcher extends Dispatcher {
     public MockResponse handleCreate(String path, String body) {
         MockResponse response = new MockResponse();
         AttributeSet features = AttributeSet.merge(attributeExtractor.fromPath(path), attributeExtractor.fromResource(body));
-        map.put(features, body);
+        synchronized (map) {
+            map.put(features, body);
+        }
         response.setBody(body);
         response.setResponseCode(202);
         return response;
@@ -104,7 +107,9 @@ public class CrudDispatcher extends Dispatcher {
                 String updatedAsString = context.getMapper().writeValueAsString(updated);
                 AttributeSet features = AttributeSet.merge(attributeExtractor.fromPath(path),
                         attributeExtractor.fromResource(updatedAsString));
-                map.put(features, updatedAsString);
+                synchronized (map) {
+                    map.put(features, updatedAsString);
+                }
                 response.setResponseCode(202);
                 response.setBody(updatedAsString);
             } catch (Exception e) {
@@ -162,18 +167,20 @@ public class CrudDispatcher extends Dispatcher {
         List<AttributeSet> items = new ArrayList<>();
         AttributeSet query = attributeExtractor.fromPath(path);
 
-        for (Map.Entry<AttributeSet, String> entry : map.entrySet()) {
-            if (entry.getKey().matches(query)) {
-                items.add(entry.getKey());
+        synchronized (map) {
+            for (Map.Entry<AttributeSet, String> entry : map.entrySet()) {
+                if (entry.getKey().matches(query)) {
+                    items.add(entry.getKey());
+                }
             }
-        }
-        if (!items.isEmpty()) {
-            for (AttributeSet item : items) {
-                map.remove(item);
+            if (!items.isEmpty()) {
+                for (AttributeSet item : items) {
+                    map.remove(item);
+                }
+                response.setResponseCode(200);
+            } else {
+                response.setResponseCode(404);
             }
-            response.setResponseCode(200);
-        } else {
-            response.setResponseCode(404);
         }
         return response;
     }
@@ -194,9 +201,11 @@ public class CrudDispatcher extends Dispatcher {
     private String doGet(String path) {
         List<String> items = new ArrayList<>();
         AttributeSet query = attributeExtractor.fromPath(path);
-        for (Map.Entry<AttributeSet, String> entry : map.entrySet()) {
-            if (entry.getKey().matches(query)) {
-                items.add(entry.getValue());
+        synchronized (map) {
+            for (Map.Entry<AttributeSet, String> entry : map.entrySet()) {
+                if (entry.getKey().matches(query)) {
+                    items.add(entry.getValue());
+                }
             }
         }
 
