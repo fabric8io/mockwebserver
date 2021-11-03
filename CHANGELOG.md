@@ -7,7 +7,9 @@
 #### Dependency Upgrade
 #### New Feature
 
-### 0.2.2
+### 0.2.2 (2021-11-03)
+
+#### Bugs
 * Fix #70: WebSocketSession regression, WS closed when no configured messages
 
 ### 0.2.1 (2021-11-03)
