@@ -56,12 +56,12 @@ public class Attribute {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Attribute attribute = (Attribute) o;
-        return Objects.equals(key, attribute.key) && Objects.equals(value, attribute.value) && type == attribute.type;
+        return Objects.equals(key, attribute.key) && Objects.equals(value, attribute.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key, value, type);
+        return Objects.hash(key, value);
     }
 
     @Override

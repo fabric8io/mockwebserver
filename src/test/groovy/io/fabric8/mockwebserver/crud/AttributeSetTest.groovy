@@ -17,7 +17,7 @@ package io.fabric8.mockwebserver.crud
 
 import spock.lang.Specification
 
-class AttributeTest extends Specification {
+class AttributeSetTest extends Specification {
 
     def "when two feature set are empty the should be equals"() {
         given:
@@ -116,4 +116,5 @@ class AttributeTest extends Specification {
     assert attributeSet.matches(selectorWithOne)
     assert !attributeSet.matches(selectorWithTwo)
   }
+
 }
