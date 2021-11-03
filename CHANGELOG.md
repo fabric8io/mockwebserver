@@ -1,6 +1,6 @@
 ## CHANGELOG
 
-### 0.2.0-SNAPSHOT
+### 0.2.0 (2021-11-01)
 
 #### Bugs
 * Fix #66: Removed code smells and bugs

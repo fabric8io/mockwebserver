@@ -23,8 +23,9 @@
 
   <groupId>io.fabric8</groupId>
   <artifactId>mockwebserver</artifactId>
-  <version>0.1.9-SNAPSHOT</version>
+  <version>0.2.0</version>
   <name>Fabric8 :: Mock Web Server</name>
+  <description>Mock Web Server</description>
 
   <url>http://fabric8.io/</url>
   <inceptionYear>2015</inceptionYear>
