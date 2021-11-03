@@ -1,5 +1,12 @@
 ## CHANGELOG
 
+### 0.3-SNAPSHOT
+
+#### Bugs
+#### Improvements
+#### Dependency Upgrade
+#### New Feature
+
 ### 0.2.0 (2021-11-01)
 
 #### Bugs
@@ -16,8 +23,6 @@
 * Fix #52: Updated OkHttpClient to version 3.12.12
 * Fix #65: Updated Jackson to version 2.13.0
 * Fix #61: Removed Sundrio dependency
-
-#### New Feature
 
 ### 0.1.8 (2020-04-14)
 #### Bugs

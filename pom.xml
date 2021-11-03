@@ -23,7 +23,7 @@
 
   <groupId>io.fabric8</groupId>
   <artifactId>mockwebserver</artifactId>
-  <version>0.2.0</version>
+  <version>0.3-SNAPSHOT</version>
   <name>Fabric8 :: Mock Web Server</name>
   <description>Mock Web Server</description>
 
