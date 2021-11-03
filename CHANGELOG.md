@@ -1,13 +1,22 @@
 ## CHANGELOG
 
-### 0.1.9-SNAPSHOT
+### 0.2.0-SNAPSHOT
+
 #### Bugs
-* Fix: Sundrio is a compile dependency, changed to provided.
+* Fix #66: Removed code smells and bugs
+* Fix #64: Allow concurrent access to Map preserving insertion order
+* Fix #57: Update expired SSL certificates (new expiry date 2031-11-01)
+
 #### Improvements
+* Fix #59: adding a getter to access namespace from the path (fabric8/kubernetes-client#2921)
+* Fix #66: Added getLastRequest method to MockServer
+* Fix #66: CRUD dispatcher handles PUT independently of POST
+
 #### Dependency Upgrade
-* Updated OkHttpClient to version 3.12.12
-* Updated Jackson to version 2.10.4
-* Updated Sundrio to version 0.21.0
+* Fix #52: Updated OkHttpClient to version 3.12.12
+* Fix #65: Updated Jackson to version 2.13.0
+* Fix #61: Removed Sundrio dependency
+
 #### New Feature
 
 ### 0.1.8 (2020-04-14)
