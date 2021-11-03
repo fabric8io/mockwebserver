@@ -80,6 +80,23 @@ class DefaultMockServerWebSocketTest extends Specification {
     assert future.get(100L, TimeUnit.MILLISECONDS) == "Closing..."
   }
 
+  def "andUpgradeToWebSocket, with no events, should emit onClose"() {
+    given:
+    server.expect()
+        .withPath("/websocket")
+        .andUpgradeToWebSocket().open().done().always()
+    def future = new CompletableFuture()
+    when:
+    def ws = client.newWebSocket(new Request.Builder().url(server.url("/websocket")).build(), new WebSocketListener() {
+      @Override
+      void onClosing(WebSocket webSocket, int code, String reason) {
+        future.complete(reason)
+      }
+    })
+    then:
+    assert future.get(100L, TimeUnit.MILLISECONDS) == "Closing..."
+  }
+
   // https://github.com/fabric8io/mockwebserver/pull/66#issuecomment-944289335
   def "andUpgradeToWebSocket, with multiple upgrades, should emit events for all websocket listeners"() {
     given:

@@ -74,6 +74,7 @@ public class WebSocketSession extends WebSocketListener {
         for (WebSocketMessage msg : timedEvents) {
             send(webSocket, msg);
         }
+        closeActiveSocketsIfApplicable();
     }
 
     @Override
