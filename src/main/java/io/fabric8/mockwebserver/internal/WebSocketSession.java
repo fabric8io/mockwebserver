@@ -24,6 +24,7 @@ import okhttp3.WebSocketListener;
 import okhttp3.mockwebserver.RecordedRequest;
 import okio.ByteString;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -161,7 +162,13 @@ public class WebSocketSession extends WebSocketListener {
         pendingMessages.add(id);
         executor.schedule(() -> {
             if (ws != null) {
-                if (message.isBinary()) {
+                if (message.getClosingReason() != null) {
+                    if (message.isBinary()) {
+                        ws.close(message.getClosingReason(), new String(message.getBytes(), StandardCharsets.UTF_8));
+                    } else {
+                        ws.close(message.getClosingReason(), message.getBody());
+                    }
+                } else if (message.isBinary()) {
                     ws.send(ByteString.of(message.getBytes()));
                 } else {
                     ws.send(message.getBody());

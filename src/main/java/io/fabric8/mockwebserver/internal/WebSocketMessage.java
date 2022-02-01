@@ -23,40 +23,50 @@ public class WebSocketMessage {
     private final byte[] body;
     private final boolean toBeRemoved;
     private final boolean binary;
+    private final Integer closingReason;
 
     public WebSocketMessage(String body) {
         this(0L, body, true);
     }
 
     public WebSocketMessage(byte[] body) {
-        this(0L, body, true, true);
+        this(0L, body, true, true, null);
     }
 
     public WebSocketMessage(String body, boolean toBeRemoved) {
-        this(0L, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, false);
+        this(0L, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, false, null);
     }
 
     public WebSocketMessage(byte[] body, boolean toBeRemoved) {
-        this(0L, body, toBeRemoved, true);
+        this(0L, body, toBeRemoved, true, null);
     }
 
     public WebSocketMessage(Long delay, String body, boolean toBeRemoved) {
-        this(delay, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, false);
+        this(delay, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, false, null);
     }
 
     public WebSocketMessage(Long delay, byte[] body, boolean toBeRemoved) {
-        this(delay, body, toBeRemoved, true);
+        this(delay, body, toBeRemoved, true, null);
+    }
+    
+    public WebSocketMessage(Long delay, String body, boolean toBeRemoved, Integer closingReason) {
+	      this(delay, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, false, closingReason);
+	  }
+
+	  public WebSocketMessage(Long delay, byte[] body, boolean toBeRemoved, Integer closingReason) {
+	      this(delay, body, toBeRemoved, true, closingReason);
+	  }
+
+    public WebSocketMessage(Long delay, String body, boolean toBeRemoved, boolean binary, Integer closingReason) {
+        this(delay, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, binary, closingReason);
     }
 
-    public WebSocketMessage(Long delay, String body, boolean toBeRemoved, boolean binary) {
-        this(delay, body.getBytes(StandardCharsets.UTF_8), toBeRemoved, binary);
-    }
-
-    public WebSocketMessage(Long delay, byte[] body, boolean toBeRemoved, boolean binary) {
+    public WebSocketMessage(Long delay, byte[] body, boolean toBeRemoved, boolean binary, Integer closingReason) {
         this.delay = delay;
         this.body = body;
         this.toBeRemoved = toBeRemoved;
         this.binary = binary;
+        this.closingReason = closingReason;
     }
 
     public Long getDelay() {
@@ -78,4 +88,8 @@ public class WebSocketMessage {
     public boolean isBinary() {
         return binary;
     }
+    
+    public Integer getClosingReason() {
+      return closingReason;
+  }
 }

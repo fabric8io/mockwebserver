@@ -110,6 +110,16 @@ To support mock of web sockets this wrapper allows you to either specify a ``req
                     .waitFor(1500).andEmit("root - DELETED")
                 .done()
                 .once()
+                
+#### Closing Web Socket messages ####
+
+        server.expect().withPath("/api/v1/users/watch")
+                .andUpgradeToWebSocket()
+                .open()
+                    .waitFor(1000).andEmit("root - CREATED")
+                    .waitFor(1500).andEmit(new WebsocketCloseReason(1000, "Bye bye"))
+                .done()
+                .once()
 
 ### CRUD Mocking ###
 

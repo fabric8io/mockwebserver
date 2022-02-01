@@ -28,6 +28,8 @@ import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 
+import io.fabric8.mockwebserver.internal.WebsocketCloseReason
+
 class DefaultMockServerWebSocketTest extends Specification {
 
   DefaultMockServer server
@@ -118,5 +120,57 @@ class DefaultMockServerWebSocketTest extends Specification {
     assert latch.await(10000L, TimeUnit.MILLISECONDS)
     cleanup:
     wss.forEach(ws -> ws.close(1000, "Test finished"))
+  }
+	
+  // https://github.com/fabric8io/mockwebserver/pull/66#issuecomment-944289335
+  def "andUpgradeToWebSocket, with closing events, should close session"() {
+    given:
+    server.expect()
+        .withPath("/websocket")
+        .andUpgradeToWebSocket().open().waitFor(5L).andEmit("A text message").waitFor(10L).andEmit(new WebsocketCloseReason(1000, "Everything is ok")).done().always()
+    def future = new CompletableFuture<List<String>>()
+    when:
+    def ws = client.newWebSocket(new Request.Builder().url(server.url("/websocket")).build(), new WebSocketListener() {
+      List<String> messages = new ArrayList<>()
+      @Override
+      void onMessage(WebSocket webSocket, String text) {
+        messages.add(text)
+      }
+      @Override
+      void onClosing(WebSocket webSocket, int code, String reason) {
+        messages.add("Session closed with code " + code + " and reason " + reason)
+        future.complete(messages)
+      }
+    })
+    then:
+    def result = future.get(50L, TimeUnit.MILLISECONDS);
+    assert result.size() == 2
+    assert result.get(0) == "A text message"
+    assert result.get(1) == "Session closed with code 1000 and reason Everything is ok"
+  }
+
+  def "andUpgradeToWebSocket, with closing events, should close session, later message skipped"() {
+    given:
+    server.expect()
+            .withPath("/websocket")
+            .andUpgradeToWebSocket().open().waitFor(10L).andEmit("A text message").waitFor(5L).andEmit(new WebsocketCloseReason(1000, "Everything is ok")).done().always()
+    def future = new CompletableFuture<List<String>>()
+    when:
+    def ws = client.newWebSocket(new Request.Builder().url(server.url("/websocket")).build(), new WebSocketListener() {
+      List<String> messages = new ArrayList<>()
+      @Override
+      void onMessage(WebSocket webSocket, String text) {
+        messages.add(text)
+      }
+      @Override
+      void onClosing(WebSocket webSocket, int code, String reason) {
+        messages.add("Session closed with code " + code + " and reason " + reason)
+        future.complete(messages)
+      }
+    })
+    then:
+    def result = future.get(50L, TimeUnit.MILLISECONDS);
+    assert result.size() == 1
+    assert result.get(0) == "Session closed with code 1000 and reason Everything is ok"
   }
 }

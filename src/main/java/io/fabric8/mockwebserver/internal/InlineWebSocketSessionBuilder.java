@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.fabric8.mockwebserver.internal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.mockwebserver.Context;
 import io.fabric8.mockwebserver.MockServerException;
-import io.fabric8.mockwebserver.dsl.Emitable;
-import io.fabric8.mockwebserver.dsl.EventDoneable;
-import io.fabric8.mockwebserver.dsl.Function;
-import io.fabric8.mockwebserver.dsl.TimesOrOnceable;
-import io.fabric8.mockwebserver.dsl.WebSocketSessionBuilder;
+import io.fabric8.mockwebserver.dsl.*;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder<T>, EventDoneable<T> {
 
@@ -171,7 +162,10 @@ public class InlineWebSocketSessionBuilder<T> implements WebSocketSessionBuilder
     }
 
     private WebSocketMessage toWebSocketMessage(Long delay, Object content, Boolean toBeRemoved) {
-        if (content instanceof String) {
+        if (content instanceof WebsocketCloseReason) {
+            WebsocketCloseReason closeReason = (WebsocketCloseReason) content;
+            return new WebSocketMessage(delay, closeReason.getReason(), toBeRemoved, closeReason.getCode());
+        } else if (content instanceof String) {
             return new WebSocketMessage(delay, (String) content, toBeRemoved);
         } else if (content instanceof WebSocketMessage) {
             return (WebSocketMessage) content;
