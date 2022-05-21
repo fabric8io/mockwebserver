@@ -117,4 +117,48 @@ class AttributeSetTest extends Specification {
     assert !attributeSet.matches(selectorWithTwo)
   }
 
+  def "when IN attribute in selector"() {
+    given:
+    Attribute a1 = new Attribute("key1", "value")
+    Attribute a2 = new Attribute("key2", "value1")
+    Attribute a3 = new Attribute("key2", "value2")
+    Attribute a4 = new Attribute("key2", "value3")
+    Attribute a5 = new Attribute("key2", Arrays.asList("value1", "value2"), AttributeType.IN)
+
+    when:
+    AttributeSet attributeSetWithoutAttr = new AttributeSet(a1)
+    AttributeSet attributeSetWithVal1 = new AttributeSet(a2)
+    AttributeSet attributeSetWithVal2 = new AttributeSet(a3)
+    AttributeSet attributeSetWithWrongVal = new AttributeSet(a4)
+    AttributeSet selector = new AttributeSet(a5);
+
+    then:
+    assert !attributeSetWithoutAttr.matches(selector)
+    assert attributeSetWithVal1.matches(selector)
+    assert attributeSetWithVal2.matches(selector)
+    assert !attributeSetWithWrongVal.matches(selector)
+  }
+
+    def "when NOT_IN attribute in selector"() {
+    given:
+    Attribute a1 = new Attribute("key1", "value")
+    Attribute a2 = new Attribute("key2", "value1")
+    Attribute a3 = new Attribute("key2", "value2")
+    Attribute a4 = new Attribute("key2", "value3")
+    Attribute a5 = new Attribute("key2", Arrays.asList("value1", "value2"), AttributeType.NOT_IN)
+
+    when:
+    AttributeSet attributeSetWithoutAttr = new AttributeSet(a1)
+    AttributeSet attributeSetWithVal1 = new AttributeSet(a2)
+    AttributeSet attributeSetWithVal2 = new AttributeSet(a3)
+    AttributeSet attributeSetWithWrongVal = new AttributeSet(a4)
+    AttributeSet selector = new AttributeSet(a5);
+
+    then:
+    assert attributeSetWithoutAttr.matches(selector)
+    assert !attributeSetWithVal1.matches(selector)
+    assert !attributeSetWithVal2.matches(selector)
+    assert attributeSetWithWrongVal.matches(selector)
+  }
+
 }

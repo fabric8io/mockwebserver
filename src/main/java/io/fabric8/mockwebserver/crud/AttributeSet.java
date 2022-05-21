@@ -94,6 +94,10 @@ public class AttributeSet {
                 return attributes.containsKey(c.getKey());
             case NOT_EXISTS:
                 return !attributes.containsKey(c.getKey());
+            case IN:
+                return attributes.containsKey(c.getKey()) && c.getValues().contains(attributes.get(c.getKey()).getValue());
+            case NOT_IN:
+                return !attributes.containsKey(c.getKey()) || !c.getValues().contains(attributes.get(c.getKey()).getValue());
             case WITHOUT:
                 return !attributes.containsValue(c);
             case WITH:
