@@ -17,6 +17,7 @@ package io.fabric8.mockwebserver
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import spock.lang.Shared
@@ -118,5 +119,49 @@ class DefaultMockServerWebSocketTest extends Specification {
     assert latch.await(10000L, TimeUnit.MILLISECONDS)
     cleanup:
     wss.forEach(ws -> ws.close(1000, "Test finished"))
+  }
+
+  // https://github.com/fabric8io/mockwebserver/issues/77
+  def "andUpgradeToWebSocket, with request header 'sec-websocket-protocol', should create response with matching header"() {
+    given:
+    server.expect()
+            .withPath("/websocket")
+            .andUpgradeToWebSocket().open().done().always()
+    def future = new CompletableFuture()
+    when:
+    def ws = client.newWebSocket(new Request.Builder().url(server.url("/websocket")).header("sec-websocket-protocol", "v4.channel.k8s.io").build(), new WebSocketListener() {
+      @Override
+      void onOpen(WebSocket webSocket, Response response) {
+        future.complete(response.header("sec-websocket-protocol"))
+      }
+    })
+    then:
+    assert future.get(100L, TimeUnit.MILLISECONDS) == "v4.channel.k8s.io"
+    cleanup:
+    ws.close(1000, "Test finished")
+  }
+
+  // https://github.com/fabric8io/mockwebserver/issues/77
+  def "andUpgradeToWebSocket, with request header 'sec-websocket-protocol', should not change existing response header"() {
+    given:
+    server.expect()
+            .withPath("/websocket")
+            .andUpgradeToWebSocket()
+            .open()
+            .done()
+            .withHeader("sec-websocket-protocol", "v3.channel.k8s.io,v4.channel.k8s.io")
+            .always()
+    def future = new CompletableFuture()
+    when:
+    def ws = client.newWebSocket(new Request.Builder().url(server.url("/websocket")).header("sec-websocket-protocol", "v4.channel.k8s.io").build(), new WebSocketListener() {
+      @Override
+      void onOpen(WebSocket webSocket, Response response) {
+        future.complete(response.header("sec-websocket-protocol"))
+      }
+    })
+    then:
+    assert future.get(100L, TimeUnit.MILLISECONDS) == "v3.channel.k8s.io,v4.channel.k8s.io"
+    cleanup:
+    ws.close(1000, "Test finished")
   }
 }
