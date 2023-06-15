@@ -28,6 +28,8 @@ import okhttp3.mockwebserver.RecordedRequest;
 
 public class SimpleResponse implements ServerResponse {
 
+  private static final String HTTP_HEADER_SEC_WEBSOCKET_PROTOCOL = "sec-websocket-protocol";
+
   private final ResponseProvider<String> bodyProvider;
 
   private final WebSocketSession webSocketSession;
@@ -67,6 +69,14 @@ public class SimpleResponse implements ServerResponse {
 
     if (webSocketSession != null) {
       mockResponse.withWebSocketUpgrade(webSocketSession);
+      // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Protocol_upgrade_mechanism
+      // see https://github.com/netty/netty/blob/4.1/codec-http/src/main/java/io/netty/handler/codec/http/websocketx/WebSocketClientHandshaker.java#L366
+      String requestWebsocketProtocol = request.getHeaders().get(HTTP_HEADER_SEC_WEBSOCKET_PROTOCOL);
+      if (requestWebsocketProtocol != null
+        // only add the response header if it's not set, to prevent changing custom response headers
+        && mockResponse.getHeaders().get(HTTP_HEADER_SEC_WEBSOCKET_PROTOCOL) == null) {
+        mockResponse.addHeader(HTTP_HEADER_SEC_WEBSOCKET_PROTOCOL, requestWebsocketProtocol);
+      }
     } else {
       mockResponse.setBody(bodyProvider.getBody(request));
     }
