@@ -23,6 +23,7 @@ public enum  HttpMethod {
     PUT,
     PATCH,
     DELETE,
+    OPTIONS,
     ANY
 
 }
