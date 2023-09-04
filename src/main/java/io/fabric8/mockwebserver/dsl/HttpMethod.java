@@ -24,6 +24,7 @@ public enum  HttpMethod {
     PATCH,
     DELETE,
     OPTIONS,
+    CONNECT,
     ANY
 
 }
