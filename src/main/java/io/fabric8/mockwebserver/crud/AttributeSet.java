@@ -94,10 +94,24 @@ public class AttributeSet {
                 return attributes.containsKey(c.getKey());
             case NOT_EXISTS:
                 return !attributes.containsKey(c.getKey());
-            case IN:
-                return attributes.containsKey(c.getKey()) && c.getValues().contains(attributes.get(c.getKey()).getValue());
-            case NOT_IN:
-                return !attributes.containsKey(c.getKey()) || !c.getValues().contains(attributes.get(c.getKey()).getValue());
+            case IN: {
+                if (attributes.containsKey(c.getKey())) {
+                    if (attributes.get(c.getKey()).getValues().size() > 1) {
+                        throw new IllegalArgumentException("Attribute " + c.getKey() + " has multiple values, can't use IN operation");
+                    }
+                    return c.getValues().contains(attributes.get(c.getKey()).getValues().iterator().next());
+                }
+                return false;
+            }
+            case NOT_IN: {
+                if (attributes.containsKey(c.getKey())) {
+                    if (attributes.get(c.getKey()).getValues().size() > 1) {
+                        throw new IllegalArgumentException("Attribute " + c.getKey() + " has multiple values, can't use NOT_IN operation");
+                    }
+                    return !c.getValues().contains(attributes.get(c.getKey()).getValues().iterator().next());
+                }
+                return true;
+            }
             case WITHOUT:
                 return !attributes.containsValue(c);
             case WITH:

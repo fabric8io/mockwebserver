@@ -15,6 +15,7 @@
  */
 package io.fabric8.mockwebserver.crud;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -24,36 +25,26 @@ import static io.fabric8.mockwebserver.crud.AttributeType.WITH;
 public class Attribute {
 
     private final Key key;
-    private final Value value;
     private final List<Value> values;
     private final AttributeType type;
 
-    public Attribute(Key key, Value value, AttributeType type) {
-        if (type == AttributeType.IN || type == AttributeType.NOT_IN) {
-            throw new IllegalArgumentException(String.format("Can't create single-value attribute with %s type", type));
-        }
-        this.key = key;
-        this.value = value;
-        this.values = null;
-        this.type = type;
-    }
 
     public Attribute(Key key, List<Value> values, AttributeType type) {
-        if (type != AttributeType.IN && type != AttributeType.NOT_IN) {
-            throw new IllegalArgumentException(String.format("Can't create set-values attribute with %s type", type));
-        }
         this.key = key;
-        this.value = null;
         this.values = values;
         this.type = type;
     }
 
+    public Attribute(Key key, Value value, AttributeType type) {
+        this(key, Collections.singletonList(value), type);
+    }
+
     public Attribute(String key, String value, AttributeType type) {
-    	this(new Key(key), new Value(value), type);
+        this(new Key(key), new Value(value), type);
     }
 
     public Attribute(String key, List<String> values, AttributeType type) {
-    	this(new Key(key), values.stream().map(Value::new).collect(Collectors.toList()), type);
+        this(new Key(key), values.stream().map(Value::new).collect(Collectors.toList()), type);
     }
 
     public Attribute(Key key, Value value) {
@@ -68,10 +59,6 @@ public class Attribute {
         return key;
     }
 
-    public Value getValue() {
-        return value;
-    }
-
     public List<Value> getValues() {
         return values;
     }
@@ -81,23 +68,23 @@ public class Attribute {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Attribute attribute = (Attribute) o;
-        return Objects.equals(key, attribute.key) && Objects.equals(value, attribute.value) && Objects.equals(values, attribute.values);
+        return Objects.equals(key, attribute.key) && Objects.equals(values, attribute.values);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key, value, values);
+        return Objects.hash(key, values);
     }
 
     @Override
     public String toString() {
         return "{" +
                 "key:" + key +
-                ", value:" + (value != null ? value : values) +
+                ", values:" + values +
                 '}';
     }
 
-	public AttributeType getType() {
-		return type;
-	}
+    public AttributeType getType() {
+        return type;
+    }
 }
