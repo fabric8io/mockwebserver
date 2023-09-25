@@ -1,6 +1,18 @@
 Mock Web Server
 ---------------
 
+
+
+> [!IMPORTANT]
+> This repository has been archived.
+> 
+> The content of this project has been moved to the [Fabric8 Kubernetes Client](https://github.com/fabric8io/kubernetes-client) repository.
+> The Maven coordinates remain the same `io.fabric8:mockwebserver`, except for the version which is now aligned with the Kubernetes Client version.
+> 
+> See https://github.com/fabric8io/kubernetes-client/issues/5430 for more information.
+
+
+
 [![CircleCI](https://circleci.com/gh/fabric8io/mockwebserver.svg?style=svg)](https://circleci.com/gh/fabric8io/mockwebserver)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.fabric8/mockwebserver/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/io.fabric8/mockwebserver/)
 
